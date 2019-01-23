@@ -57,29 +57,29 @@ setMethod("qpNrr", signature(X="ExpressionSet"),
                    identicalQs=TRUE, exact.test=TRUE, use=c("complete.obs", "em"),
                    tol=0.01, R.code.only=FALSE, clusterSize=1, estimateTime=FALSE,
                    nAdj2estimateTime=10) {
-
+            
             use <- match.arg(use)
-
+            
             p <- as.integer(nrow(X))
             h <- as.integer(ncol(Biobase::pData(X)))
             pNames <- colnames(Biobase::pData(X))
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             XP <- matrix(NA, nrow=ncol(X), ncol=0)
             I <- NULL
             if (h > 0) { ## if there are phenotypic variables, they are allowed to
-                         ## to be included in pairup.i, pairup.j or fix.Q
+              ## to be included in pairup.i, pairup.j or fix.Q
               if (is.character(pairup.i)) {
                 mt <- match(pairup.i, pNames)
                 for (i in mt[!is.na(mt)]) {
@@ -156,13 +156,13 @@ setMethod("qpNrr", signature(X="ExpressionSet"),
                 }
               }
             } ## end if (h > 0)
-
+            
             X <- t(Biobase::exprs(X))
             X <- cbind(X, XP)
             .qpNrr(X, q, I, restrict.Q, fix.Q, nTests, alpha,
-                             pairup.i, pairup.j, verbose, identicalQs,
-                             exact.test, use, tol, R.code.only, clusterSize,
-                             startTime, nAdj2estimateTime)
+                   pairup.i, pairup.j, verbose, identicalQs,
+                   exact.test, use, tol, R.code.only, clusterSize,
+                   startTime, nAdj2estimateTime)
           })
 
 ## X comes as a cross object
@@ -172,26 +172,26 @@ setMethod("qpNrr", signature(X="cross"),
                    identicalQs=TRUE, exact.test=TRUE, use=c("complete.obs", "em"),
                    tol=0.01, R.code.only=FALSE, clusterSize=1, estimateTime=FALSE,
                    nAdj2estimateTime=10) {
-
+            
             use <- match.arg(use)
-
+            
             p <- as.integer(qtl::nphe(X) + qtl::totmar(X))
             n <- qtl::nind(X)
             phenoNames <- colnames(X$pheno)
             markerNames <- qtl::markernames(X)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             XP <- matrix(NA_real_, nrow=n, ncol=p, dimnames=list(NULL, c(markerNames, phenoNames)))
             phclass <- sapply(X$pheno, class)
             discreteMask <- phclass == "character" | phclass == "factor" | phclass == "logical"
@@ -212,15 +212,15 @@ setMethod("qpNrr", signature(X="cross"),
               pairup.i <- c(markerNames, phenoNames)
               pairup.j <- setdiff(phenoNames, I)
             }
-
+            
             ## different behavior for cross objects: by default the subsets Q are samples from continuous phenotypes
             if (is.null(restrict.Q))
               restrict.Q <- setdiff(phenoNames, I)
-
+            
             .qpNrr(XP, q, I, restrict.Q, fix.Q, nTests, alpha,
-                             pairup.i, pairup.j, verbose, identicalQs,
-                             exact.test, use, tol, R.code.only, clusterSize,
-                             startTime, nAdj2estimateTime)
+                   pairup.i, pairup.j, verbose, identicalQs,
+                   exact.test, use, tol, R.code.only, clusterSize,
+                   startTime, nAdj2estimateTime)
           })
 
 ## X comes as a data frame
@@ -230,39 +230,39 @@ setMethod("qpNrr", signature(X="data.frame"),
                    long.dim.are.variables=TRUE, verbose=TRUE, identicalQs=TRUE,
                    exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                    R.code.only=FALSE, clusterSize=1, estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             X <- as.matrix(X)
             if (!is.double(X))
               stop("X should be double-precision real numbers\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X)))
               colnames(X) <- 1:ncol(X)
-
+            
             .qpNrr(X, q, I, restrict.Q, fix.Q, nTests, alpha,
                    pairup.i, pairup.j, verbose, identicalQs,
                    exact.test, use, tol, R.code.only, clusterSize,
                    startTime, nAdj2estimateTime)
           })
 
-          
+
 ## X comes as a matrix
 setMethod("qpNrr", signature(X="matrix"),
           function(X, q=1, I=NULL, restrict.Q=NULL, fix.Q=NULL, nTests=100,
@@ -270,28 +270,28 @@ setMethod("qpNrr", signature(X="matrix"),
                    long.dim.are.variables=TRUE, verbose=TRUE, identicalQs=TRUE,
                    exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                    R.code.only=FALSE, clusterSize=1, estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
-
+            
             .qpNrr(X, q, I, restrict.Q, fix.Q, nTests, alpha,
                    pairup.i, pairup.j, verbose, identicalQs,
                    exact.test, use, tol, R.code.only, clusterSize,
@@ -302,12 +302,12 @@ setMethod("qpNrr", signature(X="matrix"),
                    alpha=0.05, pairup.i=NULL, pairup.j=NULL, verbose=TRUE,
                    identicalQs=TRUE, exact.test=TRUE, use=c("complete.obs", "em"),
                    tol=0.01, R.code.only=FALSE, clusterSize=1, startTime, nAdj2estimateTime=10) {
-
+  
   if (use == "em" && !R.code.only)
     stop("use=\"em\" does not work yet with R.code.only=FALSE\n")
-
+  
   cl <- NULL
- 
+  
   if (class(clusterSize)[1] == "numeric" || class(clusterSize)[1] == "integer") {
     if (clusterSize > 1) {
       ## copying ShortRead's strategy, 'get()' are to quieten R CMD check, and for no other reason
@@ -319,14 +319,14 @@ setMethod("qpNrr", signature(X="matrix"),
       stopCl <- get("stopCluster", mode="function")
       clCall <- get("clusterCall", mode="function")
       clOpt <- get("getClusterOption", mode="function")
-
+      
       if (startTime["elapsed"] == 0)
         message("Estimating non-rejection rates using a ", clOpt("type"),
                 " cluster of ", clusterSize, " nodes\n")
       else
         message("Estimating time of calculation of non-rejection rates using a ", clOpt("type"),
                 " cluster of ", clusterSize, " nodes\n")
-
+      
       cl <- makeCl(clusterSize, type="MPI", snowlib=system.file(package="qpgraph"))
       clSetupRNG(cl)
       res <- clEvalQ(cl, require(qpgraph, quietly=TRUE))
@@ -345,34 +345,34 @@ setMethod("qpNrr", signature(X="matrix"),
     else
       stop("Unknown class for argument clusterSize:", class(clusterSize))
   }
-
+  
   ## X the matrix of data with columns as r.v. and rows as multivariate observations
-
+  
   var.names <- colnames(X)
   n.var <- ncol(X)
   N <- nrow(X)
-
+  
   ## check that the q, nTests and alpha parameters have proper values
-
+  
   if (q > n.var - 2)
     stop(paste("q=",q," > p-2=", n.var-2))
-
+  
   if (q < 0)
     stop(paste("q=",q," < 0"))
-
+  
   if (q > N - 3)
     stop(paste("q=",q," > n-3=",N-3))
-
+  
   nTests <- as.integer(nTests)
   if (nTests < 1)
     stop(paste("nTests=",nTests," < 1"))
-
+  
   if (alpha < 0.0 || alpha > 1.0) {
     stop(sprintf("significance level alpha is %.2f and it should lie in the interval [0,1]\n",alpha))
   }
-
+  
   ## check whether there are discrete variables and whether they're properly set
-
+  
   Y <- NULL
   if (!is.null(I)) {
     if (is.character(I)) {
@@ -385,20 +385,20 @@ setMethod("qpNrr", signature(X="matrix"),
     }
     Y <- (1:n.var)[-I]
   }
-
+  
   ## should the following error messages stop the cluster if it has been started ??
-
+  
   if (!is.null(restrict.Q)) {
     if (!is.matrix(restrict.Q) && !is.integer(restrict.Q) && !is.character(restrict.Q))
       stop("restrict.Q should be either a matrix or a vector of indexes or variables names\n")
-
+    
     if (is.matrix(restrict.Q)) {
       if (is.null(I))
         stop("restrict.Q as a matrix can only be employed for restricting conditioning of discrete variables\n")
-
+      
       if (rownames(restrict.Q) != colnames(X) || colnames(restrict.Q) != colnames(X))
         stop("row and column names in restrict.Q should coincide to the column names in X\n")
-
+      
       if (q > min(rowSums(restrict.Q))-2)
         stop("The minimum number of variables in restrict.Q from where subsets Q of size q should be sampled is < (q+2)\n")
     } else {
@@ -410,16 +410,16 @@ setMethod("qpNrr", signature(X="matrix"),
         if (any(is.na(match(restrict.Q, 1:n.var))))
           stop("Some variables in restrict.Q do not form part of the variables of the data in X\n")
       }
-
+      
       if (q > length(restrict.Q)-2)
         stop("The number of variables in restrict.Q from where subsets Q of size q should be sampled is < (q+2)\n")
     }
   }
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("pairup.i and pairup.j should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (is.null(pairup.i) || length(pairup.i) == 0)
     pairup.i <- 1:n.var
   else {
@@ -429,11 +429,11 @@ setMethod("qpNrr", signature(X="matrix"),
       pairup.i <- match(pairup.i, var.names)
     }
   }
-
+  
   if (is.null(pairup.j) || length(pairup.j) == 0) {
     pairup.j <- 1:n.var
     if (!is.null(I)) { ## by now, interactions between discrete variables are not considered
-        pairup.j <- (1:n.var)[-I]
+      pairup.j <- (1:n.var)[-I]
     }
   } else {
     if (is.character(pairup.j)) {
@@ -442,11 +442,11 @@ setMethod("qpNrr", signature(X="matrix"),
       pairup.j <- match(pairup.j, var.names)
     }
   }
-
+  
   if (!is.null(fix.Q)) {
     if (q <= length(fix.Q))
       stop("q should be larger than the number of variables in fix.Q\n")
-
+    
     if (is.character(fix.Q)) {
       if (any(is.na(match(fix.Q, var.names))))
         stop("Some variables in fix.Q do not form part of the variable names of the data\n")
@@ -455,7 +455,7 @@ setMethod("qpNrr", signature(X="matrix"),
       if (any(is.na(match(fix.Q, 1:n.var))))
         stop("Some variables in fix.Q do not form part of the variables of the data\n")
     }
-
+    
     if (is.null(restrict.Q))
       restrict.Q <- setdiff(1:n.var, fix.Q)
     else {
@@ -467,12 +467,12 @@ setMethod("qpNrr", signature(X="matrix"),
           stop("The subsets restrict.Q and fix.Q should be disjoint.\n")
       }
     }
-
+    
     ## variables in fix.Q are removed from the pairs for which nrr values are estimated
     pairup.i <- setdiff(pairup.i, fix.Q)
     pairup.j <- setdiff(pairup.j, fix.Q)
   }
-
+  
   ## pair the two sets pairup.i and pairup.j without pairing the same variable
   l.pairup.i <- length(pairup.i)
   l.pairup.j <- length(pairup.j)
@@ -480,38 +480,38 @@ setMethod("qpNrr", signature(X="matrix"),
   l.pairup.i.noint <- l.pairup.i - l.int
   l.pairup.j.noint <- l.pairup.j - l.int
   n.adj <- l.int * l.pairup.j.noint + l.int * l.pairup.i.noint +
-           l.pairup.i.noint * l.pairup.j.noint + l.int * (l.int - 1) / 2
-
+    l.pairup.i.noint * l.pairup.j.noint + l.int * (l.int - 1) / 2
+  
   pairup.ij.int <- intersect(pairup.i, pairup.j)
   pairup.i.noint <- setdiff(pairup.i, pairup.ij.int)
   pairup.j.noint <- setdiff(pairup.j, pairup.ij.int)
-
+  
   nrrMatrix <- NULL
-
+  
   ## estimate the actual number of necessary tests for number required by the user
   if (identicalQs && is.null(I)) {
     fractionValidQs <- 1-phyper(0, 2, n.var-2-length(fix.Q), q-length(fix.Q), lower.tail=FALSE)
     if (fractionValidQs < 0.9) {
       warning(paste(sprintf("With p=%d and q=%d the estimated fraction of valid Q sets is %.2f.", n.var, q, fractionValidQs),
-                      "Increasing nTests from", nTests, "to", floor(nTests/fractionValidQs), "in order to achieve the desired precision\n", sep=" "))
+                    "Increasing nTests from", nTests, "to", floor(nTests/fractionValidQs), "in order to achieve the desired precision\n", sep=" "))
       nTests <- floor(nTests / fractionValidQs)
     }
   }
-
+  
   if (is.null(I))
     message("Using t tests for zero partial regression coefficients.")
   else
     message(paste("Using", ifelse(exact.test, "exact", "asymptotic"), "likelihood ratio tests."))
-
+  
   if (!R.code.only) {
     elapsedTime <- 0
     if (startTime["elapsed"] > 0) {
       elapsedTime <- (proc.time() - startTime)["elapsed"]
       startTime <- proc.time()
     }
-
+    
     if (is.null(cl)) { ## single-processor execution
-
+      
       if (identicalQs && is.null(I))
         nrrMatrix <- .qpFastNrrIdenticalQs(X, q, restrict.Q, fix.Q,
                                            nTests, alpha, pairup.i.noint,
@@ -522,11 +522,11 @@ setMethod("qpNrr", signature(X="matrix"),
                                 pairup.i.noint, pairup.j.noint,
                                 pairup.ij.int, exact.test, verbose,
                                 startTime["elapsed"], nAdj2estimateTime)
-
+      
       if (startTime["elapsed"] == 0)
         nrrMatrix <- new("dspMatrix", Dim=as.integer(c(n.var, n.var)),
                          Dimnames=list(var.names, var.names), x=nrrMatrix)
-
+      
     } else {           ## use a cluster !
       clCall <- get("clusterCall", mode="function")
       nrrIdx <- list()
@@ -553,7 +553,7 @@ setMethod("qpNrr", signature(X="matrix"),
                            pairup.ij.int, exact.test, verbose,
                            startTime["elapsed"] > 0, nAdj2estimateTime)
       }
-
+      
       if (startTime["elapsed"] > 0) {
         ## the following calculation makes important part of the estimation of the time
         ## it assumes that the estimated time per processor is stored on the first position of 'nrr'
@@ -562,16 +562,16 @@ setMethod("qpNrr", signature(X="matrix"),
         elapsedTime <- elapsedTime + median(sapply(nrrIdx, function(x) x$nrr[1]))
         startTime <- proc.time()
       }
-
+      
       if (class(clusterSize)[1] == "numeric" || class(clusterSize)[1] == "integer")
         stopCl(cl)
-
+      
       nrrMatrix <- new("dspMatrix", Dim=as.integer(c(n.var, n.var)),
                        Dimnames=list(var.names, var.names),
                        x=rep(as.double(NA), n.var*(n.var-1)/2+n.var)) 
       nrrMatrix@x[do.call("c", lapply(nrrIdx, function(x) x$idx))] <-
         do.call("c", lapply(nrrIdx, function(x) x$nrr))
-
+      
       if (startTime["elapsed"] > 0) {
         elapsedTime <- elapsedTime + (proc.time() - startTime)["elapsed"]
         d <- as.vector(floor(elapsedTime / (24*3600)))
@@ -581,23 +581,23 @@ setMethod("qpNrr", signature(X="matrix"),
         nrrMatrix <- c(days=d, hours=h, minutes=m, seconds=s)
       }
     }
-
+    
     return(nrrMatrix)
   }
-
+  
   if (identicalQs && is.null(I)) {
     nrrMatrix <- .qpNrrIdenticalQs(X, q, restrict.Q, fix.Q, nTests, alpha,
                                    pairup.i.noint, pairup.j.noint, pairup.ij.int,
                                    verbose, startTime, nAdj2estimateTime)
-
+    
     return(nrrMatrix)
   }
-
+  
   S <- ssd <- mapX2ssd <- NULL
-
+  
   missingMask <- apply(X, 1, function(x) any(is.na(x)))
   missingData <- any(missingMask)
-
+  
   if (!missingData) {
     if (!is.null(I)) {  ## calculate the uncorrected sum of squares and deviations
       ssd <- qpCov(X[, Y, drop=FALSE], corrected=FALSE)
@@ -606,25 +606,25 @@ setMethod("qpNrr", signature(X="matrix"),
     } else             ## calculate sample covariance matrix
       S <- qpCov(X)
   }
-
+  
   if (!is.null(I)) {
     nLevels <- rep(NA_integer_, times=ncol(X))
     nLevels[I] <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
     if (any(nLevels[I] == 1))
       stop(sprintf("Discrete variable %s has only one level", colnames(X)[I[nLevels[I]==1]]))
   }
-
+  
   ## the idea is to return an efficiently stored symmetric matrix
   nrrMatrix <- new("dspMatrix", Dim=as.integer(c(n.var, n.var)),
                    Dimnames=list(var.names, var.names),
                    x=rep(as.double(NA), n.var*(n.var-1)/2+n.var))
-
+  
   elapsedTime <- 0
   if (startTime["elapsed"] > 0) {
     elapsedTime <- (proc.time() - startTime)["elapsed"]
     startTime <- proc.time()
   }
-
+  
   ppct <- -1
   k <- 0
   pb <- NULL
@@ -633,24 +633,24 @@ setMethod("qpNrr", signature(X="matrix"),
   rQs <- NULL
   if (!is.null(restrict.Q) && !is.matrix(restrict.Q))
     rQs <- restrict.Q
-
+  
   nrr <- NA
-
+  
   ## intersection variables against ij-exclusive variables
   for (i in pairup.ij.int) {
     for (j in c(pairup.i.noint,pairup.j.noint)) {
-
+      
       if (is.null(I))
         nrr <- .qpEdgeNrr(X, S, i, j, q, rQs, fix.Q, nTests,
                           alpha, return.pcor=FALSE, R.code.only=TRUE)
       else {
         if (!is.null(restrict.Q) && is.matrix(restrict.Q))
-            rQs <- union(which(restrict.Q[i, ]), which(restrict.Q[j, ]))
-
+          rQs <- union(which(restrict.Q[i, ]), which(restrict.Q[j, ]))
+        
         nrr <- .qpEdgeNrrHMGM(X, I, nLevels, Y, ssd, mapX2ssd, i, j, q, rQs, fix.Q,
-                                        nTests, alpha, exact.test, use, tol, R.code.only=TRUE)
+                              nTests, alpha, exact.test, use, tol, R.code.only=TRUE)
       }
-
+      
       nrrMatrix[j,i] <- nrrMatrix[i,j] <- nrr
       k <- k + 1
       if (elapsedTime > 0 && k == nAdj2estimateTime)
@@ -664,23 +664,23 @@ setMethod("qpNrr", signature(X="matrix"),
     if (elapsedTime > 0 && k == nAdj2estimateTime)
       break;
   }
-
+  
   ## i-exclusive variables against j-exclusive variables
   if (elapsedTime == 0 || k < nAdj2estimateTime) {
     for (i in pairup.i.noint) {
       for (j in pairup.j.noint) {
-
+        
         if (is.null(I))
           nrr <- .qpEdgeNrr(X, S, i, j, q, rQs, fix.Q, nTests,
                             alpha, return.pcor=FALSE, R.code.only=TRUE)
         else {
           if (!is.null(restrict.Q) && is.matrix(restrict.Q))
             rQs <- union(which(restrict.Q[i, ]), which(restrict.Q[j, ]))
-
+          
           nrr <- .qpEdgeNrrHMGM(X, I, nLevels, Y, ssd, mapX2ssd, i, j, q, rQs, fix.Q,
-                                          nTests, alpha, exact.test, use, tol, R.code.only=TRUE)
+                                nTests, alpha, exact.test, use, tol, R.code.only=TRUE)
         }
-
+        
         nrrMatrix[j,i] <- nrrMatrix[i,j] <- nrr
         k <- k + 1
         if (elapsedTime > 0 && k == nAdj2estimateTime)
@@ -695,27 +695,27 @@ setMethod("qpNrr", signature(X="matrix"),
         break;
     }
   }
-
+  
   ## intersection variables against themselves (avoiding pairing of the same)
   if (elapsedTime == 0 || k < nAdj2estimateTime) {
     for (i in seq(along=pairup.ij.int[-1])) { ## 1:(l.int-1) does not work if l.int == 0
       i2 <- pairup.ij.int[i]
-
+      
       for (j in (i+1):l.int) {
         j2 <- pairup.ij.int[j]
-
+        
         if (is.null(I))
           nrr <- .qpEdgeNrr(X, S, i2, j2, q, rQs, fix.Q, nTests,
                             alpha, return.pcor=FALSE, R.code.only=TRUE)
         else {
           if (!is.null(restrict.Q) && is.matrix(restrict.Q))
             rQs <- union(which(restrict.Q[i2, ]), which(restrict.Q[j2, ]))
-
+          
           nrr <- .qpEdgeNrrHMGM(X, I, nLevels, Y, ssd, mapX2ssd, i2, j2, q, rQs, fix.Q,
-                                          nTests, alpha, exact.test, use, tol, R.code.only=TRUE)
-
+                                nTests, alpha, exact.test, use, tol, R.code.only=TRUE)
+          
         }
-
+        
         nrrMatrix[j2,i2] <- nrrMatrix[i2,j2] <- nrr
         k <- k + 1
         if (elapsedTime > 0 && k == nAdj2estimateTime)
@@ -730,19 +730,19 @@ setMethod("qpNrr", signature(X="matrix"),
         break;
     }
   }
-
+  
   if (verbose && elapsedTime == 0) {
     close(pb)
   }
-
+  
   if (elapsedTime > 0) {
     elapsedTime <- elapsedTime + ((proc.time()-startTime)["elapsed"]/k) * n.adj
     startTime <- proc.time()
   }
-
+  
   ## this is necessary till we find out how to properly assign values in a dspMatrix
   nrrMatrix <- as(nrrMatrix, "dspMatrix")
-
+  
   if (elapsedTime > 0) {
     elapsedTime <- elapsedTime + (proc.time()-startTime)["elapsed"]
     d <- as.vector(floor(elapsedTime / (24*3600)))
@@ -751,64 +751,64 @@ setMethod("qpNrr", signature(X="matrix"),
     s <- as.vector(ceiling(elapsedTime-d*24*3600-h*3600-m*60))
     nrrMatrix <- c(days=d, hours=h, minutes=m, seconds=s)
   }
-
+  
   return(nrrMatrix)
 }
 
 .qpNrrIdenticalQs <- function(X, q, restrict.Q, fix.Q, nTests, alpha,
                               pairup.i.noint, pairup.j.noint, pairup.ij.int,
                               verbose, startTime, nAdj2estimateTime) {
-
+  
   ## X the matrix of data with columns as r.v. and rows as multivariate observations
   var.names <- colnames(X)
   n.var <- ncol(X)
   N <- nrow(X)
-
+  
   ## how many adjacencies do we have to calculate
   l.int <- length(pairup.ij.int)
   l.pairup.i.noint <- length(pairup.i.noint)
   l.pairup.j.noint <- length(pairup.j.noint)
   n.adj <- l.int * l.pairup.j.noint + l.int * l.pairup.i.noint +
-           l.pairup.i.noint * l.pairup.j.noint + l.int * (l.int - 1) / 2
-
+    l.pairup.i.noint * l.pairup.j.noint + l.int * (l.int - 1) / 2
+  
   ## calculate sample covariance matrix
   S <- qpCov(X)
-
+  
   ## sample the Q sets and pre-calculate the inverse matrices
   if (is.null(restrict.Q))
     restrict.Q <- 1:n.var
   n.fQ <- length(fix.Q)
   restrict.Q <- setdiff(restrict.Q, fix.Q)
-
+  
   ## TODO: work with complete.obs on the margins
   Qs <- as.list(array(dim=nTests))
   Qs <- lapply(Qs, function(x, rQ, fQ, n.fQ) c(sample(rQ, size=q-n.fQ, replace=FALSE), fQ),
                restrict.Q, fix.Q, n.fQ)
   S22invs <- lapply(Qs, function(x) solve(S[x, x]) )
-
+  
   ## the idea is to return an efficiently stored symmetric matrix
   nrrMatrix <- new("dspMatrix", Dim=as.integer(c(n.var, n.var)),
                    Dimnames=list(var.names, var.names),
                    x=rep(as.double(NA), n.var*(n.var-1)/2+n.var))
-
+  
   elapsedTime <- 0
   if (startTime["elapsed"] > 0) {
     elapsedTime <- (proc.time() - startTime)["elapsed"]
     startTime <- proc.time()
   }
-
+  
   ppct <- -1
   k <- 0
   pb <- NULL
   if (verbose && elapsedTime == 0)
     pb <- txtProgressBar(style=3)
-
+  
   ## intersection variables against ij-exclusive variables
   for (i in pairup.ij.int) {
     for (j in c(pairup.i.noint,pairup.j.noint)) {
       nrrMatrix[j,i] <- nrrMatrix[i,j] <-
         .qpEdgeNrrIdenticalQs(S, Qs, S22invs, i, j, q, nTests,
-                                        alpha, R.code.only=TRUE)
+                              alpha, R.code.only=TRUE)
       k <- k + 1
       if (elapsedTime > 0 && k == nAdj2estimateTime)
         break;
@@ -821,14 +821,14 @@ setMethod("qpNrr", signature(X="matrix"),
     if (elapsedTime > 0 && k == nAdj2estimateTime)
       break;
   }
-
+  
   ## i-exclusive variables against j-exclusive variables
   if (elapsedTime == 0 || k < nAdj2estimateTime) {
     for (i in pairup.i.noint) {
       for (j in pairup.j.noint) {
         nrrMatrix[j,i] <- nrrMatrix[i,j] <-
           .qpEdgeNrrIdenticalQs(S, Qs, S22invs, i, j, q, nTests,
-                                          alpha, R.code.only=TRUE)
+                                alpha, R.code.only=TRUE)
         k <- k + 1
         if (elapsedTime > 0 && k == nAdj2estimateTime)
           break;
@@ -842,19 +842,19 @@ setMethod("qpNrr", signature(X="matrix"),
         break;
     }
   }
-
+  
   l.int <- length(pairup.ij.int)
-
+  
   ## intersection variables against themselves (avoiding pairing of the same)
   if (elapsedTime == 0 || k < nAdj2estimateTime) {
     for (i in seq(along=pairup.ij.int[-1])) { ## 1:(l.int-1) does not work if l.int==0
       i2 <- pairup.ij.int[i]
-
+      
       for (j in (i+1):l.int) {
         j2 <- pairup.ij.int[j]
         nrrMatrix[j2,i2] <- nrrMatrix[i2,j2] <-
           .qpEdgeNrrIdenticalQs(S, Qs, S22invs, i2, j2, q, nTests,
-                                          alpha, R.code.only=TRUE)
+                                alpha, R.code.only=TRUE)
         k <- k + 1
         if (elapsedTime > 0 && k == nAdj2estimateTime)
           break;
@@ -868,19 +868,19 @@ setMethod("qpNrr", signature(X="matrix"),
         break;
     }
   }
-
+  
   if (verbose && elapsedTime == 0) {
     close(pb) 
   }
-
+  
   if (elapsedTime > 0) {
     elapsedTime <- elapsedTime + ((proc.time()-startTime)["elapsed"]/k) * n.adj
     startTime <- proc.time()
   }
-
+  
   ## this is necessary till we find out how to properly assign values in a dspMatrix
   nrrMatrix <- as(nrrMatrix, "dspMatrix")
-
+  
   if (elapsedTime > 0) {
     elapsedTime <- elapsedTime + (proc.time()-startTime)["elapsed"]
     d <- as.vector(floor(elapsedTime / (24*3600)))
@@ -889,7 +889,7 @@ setMethod("qpNrr", signature(X="matrix"),
     s <- as.vector(ceiling(elapsedTime-d*24*3600-h*3600-m*60))
     nrrMatrix <- c(days=d, hours=h, minutes=m, seconds=s)
   }
-
+  
   return(nrrMatrix)
 }
 
@@ -938,22 +938,22 @@ setMethod("qpAvgNrr", signature(X="ExpressionSet"),
                    verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
                    use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE,
                    clusterSize=1, estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             type <- match.arg(type)
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             X_I <- NULL
             if (!is.null(I)) {
               if (!is.character(I))
@@ -961,15 +961,15 @@ setMethod("qpAvgNrr", signature(X="ExpressionSet"),
               if (any(is.na(match(I, Biobase::varLabels(X)))))
                 stop(sprintf("%s do(es) not form part of the phenotypic data in the ExpressionSet object X.",
                              I[is.na(match(I, Biobase::varLabels(X)))]))
-
+              
               X_I <- apply(Biobase::pData(X)[, I, drop=FALSE], 2,
                            function(x) as.double(as.factor(as.character(x))))
             }
-
+            
             X <- cbind(t(Biobase::exprs(X)), X_I)
             .qpAvgNrr(X, qOrders, I, restrict.Q, fix.Q, nTests, alpha, pairup.i,
-                                pairup.j, type, verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, clusterSize, startTime, nAdj2estimateTime)
+                      pairup.j, type, verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, clusterSize, startTime, nAdj2estimateTime)
           })
 
 ## X comes as a data frame
@@ -979,36 +979,36 @@ setMethod("qpAvgNrr", signature(X="data.frame"),
                    type=c("arith.mean"), verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
                    use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE, clusterSize=1,
                    estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             type <- match.arg(type)
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             X <- as.matrix(X)
             if (!is.double(X))
               stop("X should be double-precision real numbers\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X), decreasing=TRUE, index.return=TRUE)$ix[1] == 1)
               X <- t(X)
             if (is.null(colnames(X)))
               colnames(X) <- 1:ncol(X)
             .qpAvgNrr(X, qOrders, I, restrict.Q, fix.Q, nTests, alpha, pairup.i,
-                                pairup.j, type, verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, clusterSize, startTime, nAdj2estimateTime)
+                      pairup.j, type, verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, clusterSize, startTime, nAdj2estimateTime)
           })
-          
+
 ## X comes as a matrix
 setMethod("qpAvgNrr", signature(X="matrix"),
           function(X, qOrders=4, I=NULL, restrict.Q=NULL, fix.Q=NULL, nTests=100,
@@ -1016,32 +1016,32 @@ setMethod("qpAvgNrr", signature(X="matrix"),
                    type=c("arith.mean"), verbose=TRUE, identicalQs=TRUE,
                    exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                    R.code.only=FALSE, clusterSize=1, estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             type <- match.arg(type)
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X), decreasing=TRUE, index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
             .qpAvgNrr(X, qOrders, I, restrict.Q, fix.Q, nTests, alpha, pairup.i,
-                                pairup.j, type, verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, clusterSize, startTime,
-                                nAdj2estimateTime)
+                      pairup.j, type, verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, clusterSize, startTime,
+                      nAdj2estimateTime)
           })
 
 .qpAvgNrr <- function(X, qOrders=4, I=NULL, restrict.Q=NULL, fix.Q=NULL,
@@ -1049,9 +1049,9 @@ setMethod("qpAvgNrr", signature(X="matrix"),
                       type=c("arith.mean"), verbose=TRUE, identicalQs=TRUE,
                       exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                       R.code.only=FALSE, clusterSize=1, startTime, nAdj2estimateTime) {
-
+  
   cl <- 1
- 
+  
   if (clusterSize > 1) {
     ## copying ShortRead's strategy, 'get()' are to quieten R CMD check, and for no other reason
     makeCl <- get("makeCluster", mode="function")
@@ -1062,14 +1062,14 @@ setMethod("qpAvgNrr", signature(X="matrix"),
     stopCl <- get("stopCluster", mode="function")
     clCall <- get("clusterCall", mode="function")
     clOpt <- get("getClusterOption", mode="function")
-
+    
     if (startTime["elapsed"] == 0)
       message("Estimating average non-rejection rates using a ", clOpt("type"),
               " cluster of ", clusterSize, " nodes\n")
     else
       message("Estimating time of calculation of average non-rejection rates using a ",
               clOpt("type"), " cluster of ", clusterSize, " nodes\n")
-
+    
     cl <- makeCl(clusterSize, type="MPI", snowlib=system.file(package="qpgraph"))
     clSetupRNG(cl)
     res <- clEvalQ(cl, require(qpgraph, quietly=TRUE))
@@ -1083,20 +1083,20 @@ setMethod("qpAvgNrr", signature(X="matrix"),
     clApply(cl, 1:clusterSize, function(x) assign("clusterRank", x, envir=.GlobalEnv))
     clApply(cl, 1:clusterSize, function(x) assign("clusterRank", x, envir=.GlobalEnv))
   }
-
+  
   var.names <- colnames(X)
   n.var <- ncol(X)
   N <- nrow(X)
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("pairup.i and pairup.j should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (length(qOrders) == 1) {
     if (qOrders > min(n.var, N) - 3)
       stop(sprintf("qOrders=%d is larger than the number of available q-orders for the given data set (%d)\n",
                    qOrders, min(n.var, N) - 3))
-
+    
     qOrders <- as.integer(round(seq(1, min(n.var, N) - 3,
                                     by=(min(n.var, N) - 3) / qOrders), digits=0))
   } else {
@@ -1105,39 +1105,39 @@ setMethod("qpAvgNrr", signature(X="matrix"),
       stop(sprintf("for the given data set q-orders should lie in the range [1,%d]\n",
                    min(n.var-3, N-3)))
   }
-
+  
   w <- 1 / length(qOrders)
   ## the idea is to return an efficiently stored symmetric matrix
   avgNrrMatrix <- new("dspMatrix", Dim=as.integer(c(n.var, n.var)),
                       Dimnames=list(var.names, var.names),
                       x=rep(as.double(0), n.var*(n.var-1)/2+n.var))
-
+  
   elapsedTime <- 0
-
+  
   for (q in qOrders) {
     if (verbose && startTime["elapsed"] == 0)
       cat(sprintf("q=%d\n",q))
-
+    
     thisNrr <- .qpNrr(X, q, I, restrict.Q, fix.Q, nTests, alpha, pairup.i,
-                                pairup.j, verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, cl, startTime, nAdj2estimateTime)
-
+                      pairup.j, verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, cl, startTime, nAdj2estimateTime)
+    
     if (startTime["elapsed"] > 0) {
       elapsedTime <- elapsedTime + thisNrr["days"]*24*3600 + thisNrr["hours"]*3600 +
-                     thisNrr["minutes"]*60 + thisNrr["seconds"]
+        thisNrr["minutes"]*60 + thisNrr["seconds"]
       startTime <- proc.time()
     } else {
       ## this is necessary till we find out how to sum two dspMatrices getting a dspMatrix
       avgNrrMatrix <- as(avgNrrMatrix + w * thisNrr, "dspMatrix")
     }
   }
-
+  
   if (clusterSize > 1 && !is.null(cl)) {
     stopCl(cl)
-
+    
     elapsedTime <- elapsedTime + (proc.time() - startTime)["elapsed"]
   }
-
+  
   if (startTime["elapsed"] > 0) {
     d <- as.vector(floor(elapsedTime / (24*3600)))
     h <- as.vector(floor((elapsedTime-d*24*3600)/3600))
@@ -1145,7 +1145,7 @@ setMethod("qpAvgNrr", signature(X="matrix"),
     s <- as.vector(ceiling(elapsedTime-d*24*3600-h*3600-m*60))
     avgNrrMatrix <- c(days=d, hours=h, minutes=m, seconds=s)
   }
-
+  
   return(avgNrrMatrix)
 }
 
@@ -1203,32 +1203,32 @@ setGeneric("qpGenNrr", function(X, ...) standardGeneric("qpGenNrr"))
 
 ## X comes as an ExpressionSet object
 setMethod("qpGenNrr", signature(X="ExpressionSet"),
-            function(X, datasetIdx=1, qOrders=NULL, I=NULL, restrict.Q=NULL, fix.Q=NULL,
-                     return.all=FALSE, nTests=100, alpha=0.05, pairup.i=NULL,
-                     pairup.j=NULL, verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
-                     use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE,
-                     clusterSize=1, estimateTime=FALSE, nAdj2estimateTime=10) {
-
+          function(X, datasetIdx=1, qOrders=NULL, I=NULL, restrict.Q=NULL, fix.Q=NULL,
+                   return.all=FALSE, nTests=100, alpha=0.05, pairup.i=NULL,
+                   pairup.j=NULL, verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
+                   use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE,
+                   clusterSize=1, estimateTime=FALSE, nAdj2estimateTime=10) {
+            
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             if ((is.null(Biobase::pData(X)) || ncol(Biobase::pData(X)) < 1) && length(datasetIdx) != dim(X)[2])
               stop("Either supply a vector indexing the data sets to which each sample belongs to, or add a column with this information to the phenotypic data of the ExpressionSet indicating then which one is that column\n")
-
+            
             if (length(datasetIdx) != dim(X)[2] && length(datasetIdx) != 1)
               stop("Argument 'datasetIdx' should be either a single number, or a character string, indicating the column of the phenotypic data of the ExpressionSet containing the indexes to the datasets. Alternatively, it can be a vector of these indexes with as many positions as samples\n")
-
+            
             if (length(datasetIdx) == 1) {
               if (is.character(datasetIdx))
                 datasetIdx <- match(datasetIdx, colnames(Biobase::pData(X)))
@@ -1236,20 +1236,20 @@ setMethod("qpGenNrr", signature(X="ExpressionSet"),
                 if (is.integer(datasetIdx) || is.numeric(datasetIdx))
                   datasetIdx <- match(datasetIdx, 1:ncol(Biobase::pData(X)))
               }
-
+              
               if (is.na(datasetIdx) || (!is.character(datasetIdx) && !is.integer(datasetIdx)))
                 stop("Argument 'datasetIdx' does not match any phenotypic column in the input ExpressionSet X. Please look at Biobase::pData(X)\n")
             }
-
+            
             if (length(datasetIdx) != dim(X)[2])
               datasetIdx <- Biobase::pData(X)[, datasetIdx]
-
+            
             if (!is.null(qOrders) && any(is.na(qOrders[unique(datasetIdx)])))
               stop("Some values in 'datasetIdx' do not match any position in 'qOrders'\n")
-
+            
             if (!is.null(qOrders) && is.null(names(qOrders)))
               stop("When they are specified, values in 'qOrders' should have names matching the data sets index names\n")
-
+            
             X_I <- NULL
             if (!is.null(I)) {
               if (!is.character(I))
@@ -1257,17 +1257,17 @@ setMethod("qpGenNrr", signature(X="ExpressionSet"),
               if (any(is.na(match(I, Biobase::varLabels(X)))))
                 stop(sprintf("%s do(es) not form part of the phenotypic data in the ExpressionSet object X.",
                              I[is.na(match(I, Biobase::varLabels(X)))]))
-
+              
               X_I <- apply(Biobase::pData(X)[, I, drop=FALSE], 2,
                            function(x) as.double(as.factor(as.character(x))))
             }
-
+            
             X <- cbind(t(Biobase::exprs(X)), X_I)
-
+            
             .qpGenNrr(X, datasetIdx, qOrders, I, restrict.Q, fix.Q,
-                                return.all, nTests, alpha, pairup.i, pairup.j,
-                                verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, clusterSize, startTime, nAdj2estimateTime)
+                      return.all, nTests, alpha, pairup.i, pairup.j,
+                      verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, clusterSize, startTime, nAdj2estimateTime)
           })
 
 ## X comes as a data frame
@@ -1277,35 +1277,35 @@ setMethod("qpGenNrr", signature(X="data.frame"),
                    long.dim.are.variables=TRUE, verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
                    use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE, clusterSize=1,
                    estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             X <- as.matrix(X)
             if (!is.double(X))
               stop("X should be double-precision real numbers\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X)))
               colnames(X) <- 1:ncol(X)
-
+            
             if (length(datasetIdx) != dim(X)[1] && length(datasetIdx) != 1)
               stop("Argument 'datasetIdx' should be either a single number, or a character string, indicating the column (or row) of the input data frame X containing the indexes to the datasets. Alternatively, it can be a vector of these indexes with as many positions as samples\n")
-
+            
             if (length(datasetIdx) == 1) {
               if (is.character(datasetIdx))
                 datasetIdx <- match(datasetIdx, colnames(X))
@@ -1313,31 +1313,31 @@ setMethod("qpGenNrr", signature(X="data.frame"),
                 if (is.integer(datasetIdx) || is.numeric(datasetIdx))
                   datasetIdx <- match(datasetIdx, 1:ncol(X))
               }
-
+              
               if (is.na(datasetIdx) || (!is.character(datasetIdx) && !is.integer(datasetIdx) &&
                                         !is.numeric(datasetIdx)))
                 stop("Argument 'datasetIdx' does not match any column (or row) in the input data frame X\n")
             }
-
+            
             if (length(datasetIdx) != dim(X)[1]) {
               tmp <- X[, datasetIdx]
               X <- X[, -datasetIdx]
               datasetIdx <- tmp
             }
-
+            
             if (!is.null(qOrders) && any(is.na(qOrders[unique(datasetIdx)])))
               stop("Some values in 'datasetIdx' do not match any position in 'qOrders'\n")
-
+            
             if (!is.null(qOrders) && is.null(names(qOrders)))
               stop("When they are specified, values in 'qOrders' should have names matching the data sets index names\n")
-
+            
             .qpGenNrr(X, datasetIdx, qOrders, I, restrict.Q, fix.Q,
-                                return.all, nTests, alpha, pairup.i, pairup.j,
-                                verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, clusterSize, startTime, nAdj2estimateTime)
+                      return.all, nTests, alpha, pairup.i, pairup.j,
+                      verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, clusterSize, startTime, nAdj2estimateTime)
           })
 
-          
+
 ## X comes as a matrix
 setMethod("qpGenNrr", signature(X="matrix"),
           function(X, datasetIdx=1, qOrders=NULL, I=NULL, restrict.Q=NULL, fix.Q=NULL,
@@ -1345,31 +1345,31 @@ setMethod("qpGenNrr", signature(X="matrix"),
                    long.dim.are.variables=TRUE, verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
                    use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE, clusterSize=1,
                    estimateTime=FALSE, nAdj2estimateTime=10) {
-
+            
             use <- match.arg(use)
-
+            
             startTime <- c(user.self=0, sys.self=0, elapsed=0, user.child=0, sys.child=0)
             class(startTime) <- "proc_time"
             if (estimateTime)
               startTime <- proc.time()
-
+            
             if (clusterSize > 1 && R.code.only)
               stop("Using a cluster (clusterSize > 1) only works with R.code.only=FALSE\n")
-
+            
             if (clusterSize > 1 &&
-               (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
               stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
+            
             if (long.dim.are.variables &&
-              sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
+                sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
-
+            
             if (length(datasetIdx) != dim(X)[1] && length(datasetIdx) != 1)
               stop("Argument 'datasetIdx' should be either a single number, or a character string, indicating the column (or row) of the input matrix X containing the indexes to the datasets. Alternatively, it can be a vector of these indexes with as many positions as samples\n")
-
+            
             if (length(datasetIdx) == 1) {
               if (is.character(datasetIdx))
                 datasetIdx <- match(datasetIdx, colnames(X))
@@ -1377,28 +1377,28 @@ setMethod("qpGenNrr", signature(X="matrix"),
                 if (is.integer(datasetIdx) || is.numeric(datasetIdx))
                   datasetIdx <- match(datasetIdx, 1:ncol(X))
               }
-
+              
               if (is.na(datasetIdx) || (!is.character(datasetIdx) && !is.integer(datasetIdx) &&
                                         !is.numeric(datasetIdx)))
                 stop("Argument 'datasetIdx' does not match any column (or row) in the input matrix X\n")
             }
-
+            
             if (length(datasetIdx) != dim(X)[1]) {
               tmp <- X[, datasetIdx]
               X <- X[, -datasetIdx]
               datasetIdx <- tmp
             }
-
+            
             if (!is.null(qOrders) && any(is.na(qOrders[unique(datasetIdx)])))
               stop("Some values in 'datasetIdx' do not match any position in 'qOrders'\n")
-
+            
             if (!is.null(qOrders) && is.null(names(qOrders)))
               stop("When they are specified, values in 'qOrders' should have names matching the data sets index names\n")
-
+            
             .qpGenNrr(X, datasetIdx, qOrders, I, restrict.Q, fix.Q,
-                                return.all, nTests, alpha, pairup.i, pairup.j,
-                                verbose, identicalQs, exact.test, use, tol,
-                                R.code.only, clusterSize, startTime, nAdj2estimateTime)
+                      return.all, nTests, alpha, pairup.i, pairup.j,
+                      verbose, identicalQs, exact.test, use, tol,
+                      R.code.only, clusterSize, startTime, nAdj2estimateTime)
           })
 
 
@@ -1407,9 +1407,9 @@ setMethod("qpGenNrr", signature(X="matrix"),
                       pairup.j=NULL, verbose=TRUE, identicalQs=TRUE, exact.test=TRUE,
                       use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE,
                       clusterSize=1, startTime, nAdj2estimateTime) {
-
+  
   cl <- 1
- 
+  
   if (clusterSize > 1) {
     ## copying ShortRead's strategy, 'get()' are to quieten R CMD check, and for no other reason
     makeCl <- get("makeCluster", mode="function")
@@ -1420,14 +1420,14 @@ setMethod("qpGenNrr", signature(X="matrix"),
     stopCl <- get("stopCluster", mode="function")
     clCall <- get("clusterCall", mode="function")
     clOpt <- get("getClusterOption", mode="function")
-
+    
     if (startTime["elapsed"] == 0)
       message("Estimating generalized non-rejection rates using a ", clOpt("type"),
               " cluster of ", clusterSize, " nodes\n")
     else
       message("Estimating time of calculation of generalized non-rejection rates using a ",
               clOpt("type"), " cluster of ", clusterSize, " nodes\n")
-
+    
     cl <- makeCl(clusterSize, type="MPI", snowlib=system.file(package="qpgraph"))
     clSetupRNG(cl)
     res <- clEvalQ(cl, require(qpgraph, quietly=TRUE))
@@ -1440,71 +1440,71 @@ setMethod("qpGenNrr", signature(X="matrix"),
     rm("clusterSize", envir=.GlobalEnv)
     clApply(cl, 1:clusterSize, function(x) assign("clusterRank", x, envir=.GlobalEnv))
   }
-
+  
   var.names <- colnames(X)
   n.var <- ncol(X)
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("pairup.i and pairup.j should both either be set to NULL or contain subsets of variables\n")
-
+  
   datasetIdx <- as.character(datasetIdx)
   N <- table(datasetIdx)
-
+  
   if (any(N < 3))
     stop("Dataset(s) ", paste(names(N)[which(N < 3)], collapse=","), " has/have less than 3 samples\n")
-
+  
   ## when qOrders is NULL the median of the possible q-orders is taken for each dataset
   if (is.null(qOrders))
     qOrders <- floor(sapply(N, function(x) median(seq(1, x-3))))
-
+  
   ## validate qOrders
   if (min(qOrders) < 1 || any(qOrders > N[names(qOrders)]-3))
     stop("Within each data set its q-order should lie in the range [1, N-3] with N being the corresponding number of samples\n")
-
+  
   ## contribution of each dataset is proportional to its sample size
   w <- N / sum(N)
-
+  
   ## the idea is to return an efficiently stored symmetric matrix
   result <- list(genNrr=new("dspMatrix", Dim=as.integer(c(n.var, n.var)),
                             Dimnames=list(var.names, var.names),
                             x=rep(as.double(0), n.var*(n.var-1)/2+n.var)),
                  qOrders=qOrders)
-
+  
   if (verbose && startTime["elapsed"] == 0)
     cat("Employing qOrders={", paste(paste(names(qOrders),
                                            qOrders, sep="="),
                                      collapse=", "),"}\n")
-
+  
   elapsedTime <- 0
   for (idx in unique(datasetIdx)) {
-
+    
     if (verbose && startTime["elapsed"] == 0)
       cat(sprintf("Data set %s\n", as.character(idx)))
-
+    
     thisNrr <- .qpNrr(X[datasetIdx == idx, ], qOrders[idx], I, restrict.Q,
-                                fix.Q, nTests, alpha, pairup.i, pairup.j, verbose, identicalQs,
-                                exact.test, use, tol, R.code.only, cl, startTime, nAdj2estimateTime)
-
+                      fix.Q, nTests, alpha, pairup.i, pairup.j, verbose, identicalQs,
+                      exact.test, use, tol, R.code.only, cl, startTime, nAdj2estimateTime)
+    
     if (startTime["elapsed"] > 0) {
       elapsedTime <- elapsedTime + thisNrr["days"]*24*3600 + thisNrr["hours"]*3600 +
-                     thisNrr["minutes"]*60 + thisNrr["seconds"]
+        thisNrr["minutes"]*60 + thisNrr["seconds"]
       startTime <- proc.time()
     } else {
       ## this is necessary till we find out how to sum two dspMatrices getting a dspMatrix
       result[["genNrr"]] <- as(result[["genNrr"]] + w[idx] * thisNrr, "dspMatrix")
-
+      
       if (return.all)
         result[[as.character(idx)]] <- thisNrr
     }
   }
-
+  
   if (clusterSize > 1 && !is.null(cl)) {
     stopCl(cl)
-
+    
     elapsedTime <- elapsedTime + (proc.time() - startTime)["elapsed"]
   }
-
+  
   if (startTime["elapsed"] > 0) {
     d <- as.vector(floor(elapsedTime / (24*3600)))
     h <- as.vector(floor((elapsedTime-d*24*3600)/3600))
@@ -1512,7 +1512,7 @@ setMethod("qpGenNrr", signature(X="matrix"),
     s <- as.vector(ceiling(elapsedTime-d*24*3600-h*3600-m*60))
     result <- c(days=d, hours=h, minutes=m, seconds=s)
   }
-
+  
   return(result)
 }
 
@@ -1550,19 +1550,19 @@ setMethod("qpEdgeNrr", signature(X="ExpressionSet"),
           function(X, i=1, j=2, q=1, restrict.Q=NULL, fix.Q=NULL,
                    nTests=100, alpha=0.05, exact.test=TRUE,
                    use=c("complete.obs", "em"), tol=0.01, R.code.only=FALSE) {
-
+            
             use <- match.arg(use)
-
+            
             p <- as.integer(nrow(X))
             h <- as.integer(ncol(Biobase::pData(X)))
             n <- as.integer(ncol(X))
             fNames <- Biobase::featureNames(X)
             pNames <- colnames(Biobase::pData(X))
-
+            
             XP <- matrix(NA, nrow=ncol(X), ncol=0)
             I <- NULL
             if (h > 0) { ## if there are phenotypic variables, they are allowed to
-                         ## to be included in i, j or fix.Q
+              ## to be included in i, j or fix.Q
               if (is.character(i)) {
                 if (!is.na(match(i, pNames))) { ## then 'i' refers to a phenotypic variable (cont. or discrete)
                   x <- Biobase::pData(X)[, i]
@@ -1666,20 +1666,20 @@ setMethod("qpEdgeNrr", signature(X="ExpressionSet"),
                 }
               }
             } ## end if (h > 0)
-
+            
             X <- t(Biobase::exprs(X))
             X <- cbind(X, XP)
             varNames <- colnames(X)
             p <- ncol(X)
-
+            
             if (is.null(I)) {
               param <- .processParameters(varNames, p, p+h, 0, n, i=i, j=j, q=q,
-                                                    restrict.Q=restrict.Q, fix.Q=fix.Q)
+                                          restrict.Q=restrict.Q, fix.Q=fix.Q)
               i <- param$i
               j <- param$j
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               V <- 1:p
               if (!is.null(restrict.Q)) {
                 V <- c(i, j, setdiff(restrict.Q, c(i, j)), fix.Q)
@@ -1688,10 +1688,10 @@ setMethod("qpEdgeNrr", signature(X="ExpressionSet"),
                 i <- 1L
                 j <- 2L
               }
-
+              
               ## S <- qpCov(X[, V, drop=FALSE]) ## here is faster to calculate S for each margin
               S <- NULL
-
+              
               .qpEdgeNrr(X[, V, drop=FALSE], S, i, j, q, restrict.Q, fix.Q, nTests,
                          alpha, return.pcor=FALSE, R.code.only)
             } else {
@@ -1700,25 +1700,25 @@ setMethod("qpEdgeNrr", signature(X="ExpressionSet"),
                 Y <- setdiff(varNames, I)
               else
                 Y <- (1:p)[-I]
-
+              
               param <- .processParameters(varNames, p, p+h, 0, n, i=i, j=j, q=q, I=I, Y=Y,
-                                                      restrict.Q=restrict.Q, fix.Q=fix.Q)
+                                          restrict.Q=restrict.Q, fix.Q=fix.Q)
               i <- param$i
               j <- param$j
               I <- param$I
               Y <- param$Y
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               if (length(intersect(restrict.Q, Y)) > 0)
                 Y <- unique(c(intersect(i, Y), intersect(j, Y),
                               intersect(restrict.Q, Y), intersect(fix.Q, Y)))
-
+              
               nLevels <- rep(NA_integer_, times=p)
               nLevels[I] <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
               if (any(nLevels[I] == 1))
                 stop(sprintf("Discrete variable %s has only one level", colnames(X)[I[nLevels[I]==1]]))
-
+              
               ssd <- mapX2ssd <- NULL
               ## here is faster to calculate ssd for each margin
               ## missingMask <- apply(X, 2, function(x) any(is.na(x)))
@@ -1728,10 +1728,10 @@ setMethod("qpEdgeNrr", signature(X="ExpressionSet"),
               ##   mapX2ssd <- match(varNames, colnames(ssd))
               ##   ## names(mapX2ssd) <- colnames(X) ## is this necessary ??
               ## }
-
+              
               .qpEdgeNrrHMGM(X, I, nLevels, Y, ssd, mapX2ssd, i, j, q,
-                                       restrict.Q, fix.Q, nTests, alpha,
-                                       exact.test, use, tol, R.code.only)
+                             restrict.Q, fix.Q, nTests, alpha,
+                             exact.test, use, tol, R.code.only)
             }
           })
 
@@ -1741,31 +1741,31 @@ setMethod("qpEdgeNrr", signature(X="data.frame"),
                    nTests=100, alpha=0.05, long.dim.are.variables=TRUE,
                    exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                    R.code.only=FALSE) {
-
+            
             use <- match.arg(use)
-
+            
             X <- as.matrix(X)
             if (!is.double(X))
               stop("X should be double-precision real numbers\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X)))
               colnames(X) <- 1:ncol(X)
             varNames <- colnames(X)
             p <- ncol(X)
             n <- nrow(X)
-
+            
             if (is.null(I)) {
               param <- .processParameters(varNames, p, p, 0, n, i=i, j=j, q=q,
-                                                    restrict.Q=restrict.Q, fix.Q=fix.Q)
+                                          restrict.Q=restrict.Q, fix.Q=fix.Q)
               i <- param$i
               j <- param$j
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               V <- 1:p
               if (!is.null(restrict.Q)) {
                 V <- c(i, j, setdiff(restrict.Q, c(i, j)), fix.Q)
@@ -1774,40 +1774,40 @@ setMethod("qpEdgeNrr", signature(X="data.frame"),
                 i <- 1L
                 j <- 2L
               }
-
+              
               ## S <- qpCov(X[, V, drop=FALSE]) ## here is faster to calculate S for each margin
               S <- NULL
-
+              
               .qpEdgeNrr(X[, V, drop=FALSE], S, i, j, q, restrict.Q, fix.Q, nTests,
                          alpha, return.pcor=FALSE, R.code.only)
             } else {
               if (!is.character(I) && !is.numeric(I) && !is.integer(I))
                 stop("I should be either variables names or indices\n")
-
+              
               Y <- colnames(X)
               if (is.character(I))
                 Y <- setdiff(colnames(X), I)
               else
                 Y <- (1:ncol(X))[-I]
-
+              
               param <- .processParameters(varNames, p, p, 0, n, i=i, j=j, q=q, I=I, Y=Y,
-                                                      restrict.Q=restrict.Q, fix.Q=fix.Q)
+                                          restrict.Q=restrict.Q, fix.Q=fix.Q)
               i <- param$i
               j <- param$j
               I <- param$I
               Y <- param$Y
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               if (length(intersect(restrict.Q, Y)) > 0)
                 Y <- unique(c(intersect(i, Y), intersect(j, Y),
                               intersect(restrict.Q, Y), intersect(fix.Q, Y)))
-
+              
               nLevels <- rep(NA_integer_, times=ncol(X))
               nLevels[I] <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
               if (any(nLevels[I] == 1))
                 stop(sprintf("Discrete variable %s has only one level", colnames(X)[I[nLevels[I]==1]]))
-
+              
               ssd <- mapX2ssd <- NULL
               ## here is faster to calculate ssd for each margin
               ## missingMask <- apply(X, 2, function(x) any(is.na(x)))
@@ -1817,32 +1817,32 @@ setMethod("qpEdgeNrr", signature(X="data.frame"),
               ##   mapX2ssd <- match(varNames, colnames(ssd))
               ##   ## names(mapX2ssd) <- colnames(X) ## is this necessary ??
               ## }
-
+              
               .qpEdgeNrrHMGM(X, I, nLevels, Y, ssd, mapX2ssd, i, j, q,
-                                       restrict.Q, fix.Q, nTests, alpha,
-                                       exact.test, use, tol, R.code.only)
+                             restrict.Q, fix.Q, nTests, alpha,
+                             exact.test, use, tol, R.code.only)
             }
           })
 
-          
+
 # X comes as a matrix
 setMethod("qpEdgeNrr", signature(X="matrix"),
           function(X, i=1, j=2, q=1, I=NULL, restrict.Q=NULL, fix.Q=NULL,
                    nTests=100, alpha=0.05, long.dim.are.variables=TRUE,
                    exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                    R.code.only=FALSE) {
-
+            
             use <- match.arg(use)
-
+            
             if (long.dim.are.variables &&
-              sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
+                sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
             p <- ncol(X)
             varNames <- colnames(X)
-
+            
             n <- nrow(X)
             if (is.null(I)) {
               param <- .processParameters(varNames, p, p, 0, n, i=i, j=j, q=q,
@@ -1851,7 +1851,7 @@ setMethod("qpEdgeNrr", signature(X="matrix"),
               j <- param$j
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               V <- 1:p
               if (!is.null(restrict.Q)) {
                 V <- c(i, j, setdiff(restrict.Q, c(i, j)), fix.Q)
@@ -1860,40 +1860,40 @@ setMethod("qpEdgeNrr", signature(X="matrix"),
                 i <- 1L
                 j <- 2L
               }
-
+              
               ## S <- qpCov(X[, V, drop=FALSE]) ## here is faster to calculate S for each margin
               S <- NULL
-
+              
               .qpEdgeNrr(X[, V, drop=FALSE], S, i, j, q, restrict.Q, fix.Q, nTests,
                          alpha, return.pcor=FALSE, R.code.only)
             } else {
               if (!is.character(I) && !is.numeric(I) && !is.integer(I))
                 stop("I should be either variables names or indices\n")
-
+              
               Y <- colnames(X)
               if (is.character(I))
                 Y <- setdiff(colnames(X), I)
               else
                 Y <- (1:ncol(X))[-I]
-
+              
               param <- .processParameters(varNames, p, p, 0, n, i=i, j=j, q=q, I=I, Y=Y,
-                                                    restrict.Q=restrict.Q, fix.Q=fix.Q)
+                                          restrict.Q=restrict.Q, fix.Q=fix.Q)
               i <- param$i
               j <- param$j
               I <- param$I
               Y <- param$Y
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               if (length(intersect(restrict.Q, Y)) > 0)
                 Y <- unique(c(intersect(i, Y), intersect(j, Y),
                               intersect(restrict.Q, Y), intersect(fix.Q, Y)))
-
+              
               nLevels <- rep(NA_integer_, times=ncol(X))
               nLevels[I] <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
               if (any(nLevels[I] == 1))
                 stop(sprintf("Discrete variable %s has only one level", colnames(X)[I[nLevels[I]==1]]))
-
+              
               ssd <- mapX2ssd <- NULL
               ## here is faster to calculate ssd for each margin
               ## missingMask <- apply(X, 2, function(x) any(is.na(x)))
@@ -1903,10 +1903,10 @@ setMethod("qpEdgeNrr", signature(X="matrix"),
               ##   mapX2ssd <- match(varNames, colnames(ssd))
               ##   ## names(mapX2ssd) <- colnames(X) ## is this necessary ??
               ## }
-
+              
               .qpEdgeNrrHMGM(X, I, nLevels, Y, ssd, mapX2ssd, i, j, q,
-                                       restrict.Q, fix.Q, nTests, alpha,
-                                       exact.test, use, tol, R.code.only)
+                             restrict.Q, fix.Q, nTests, alpha,
+                             exact.test, use, tol, R.code.only)
             }
           })
 
@@ -1914,22 +1914,22 @@ setMethod("qpEdgeNrr", signature(X="matrix"),
 setMethod("qpEdgeNrr", signature(X="SsdMatrix"),
           function(X, i=1, j=2, q=1, restrict.Q=NULL, fix.Q=NULL,
                    nTests=100, alpha=0.05, R.code.only=FALSE) {
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
             p <- ncol(X)
             varNames <- colnames(X)
-
+            
             if (is.null(rownames(X)))
               rownames(X) <- colnames(X)
-
+            
             param <- .processParameters(varNames, p, p, 0, X@n, i=i, j=j, q=q,
                                         restrict.Q=restrict.Q, fix.Q=fix.Q)
             i <- param$i
             j <- param$j
             restrict.Q <- param$restrict.Q
             fix.Q <- param$fix.Q
-
+            
             .qpEdgeNrr(NULL, X, i, j, q, restrict.Q, fix.Q, nTests,
                        alpha, return.pcor=FALSE, R.code.only)
           })
@@ -1941,18 +1941,18 @@ setMethod("qpEdgeCor", signature(X="matrix"),
                    nTests=100, alpha=0.05, long.dim.are.variables=TRUE,
                    exact.test=TRUE, use=c("complete.obs", "em"), tol=0.01,
                    R.code.only=FALSE) {
-
+            
             use <- match.arg(use)
-
+            
             if (long.dim.are.variables &&
-              sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
+                sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
             p <- ncol(X)
             varNames <- colnames(X)
-
+            
             n <- nrow(X)
             if (is.null(I)) {
               param <- .processParameters(varNames, p, p, 0, n, i=i, j=j, q=q,
@@ -1961,7 +1961,7 @@ setMethod("qpEdgeCor", signature(X="matrix"),
               j <- param$j
               restrict.Q <- param$restrict.Q
               fix.Q <- param$fix.Q
-
+              
               V <- 1:p
               if (!is.null(restrict.Q)) {
                 V <- c(i, j, setdiff(restrict.Q, c(i, j)), fix.Q)
@@ -1970,10 +1970,10 @@ setMethod("qpEdgeCor", signature(X="matrix"),
                 i <- 1L
                 j <- 2L
               }
-
+              
               ## S <- qpCov(X[, V, drop=FALSE]) ## here is faster to calculate S for each margin
               S <- NULL
-
+              
               matrix(data=.qpEdgeNrr(X[, V, drop=FALSE], S, i, j, q, restrict.Q, fix.Q, nTests,
                                      alpha, return.pcor=TRUE, R.code.only),
                      nrow=nTests, ncol=q+2, dimnames=list(NULL, c("pcor", "pval", paste0("Q", 1:q))))
@@ -1984,20 +1984,20 @@ setMethod("qpEdgeCor", signature(X="matrix"),
 setMethod("qpEdgeCor", signature(X="UGgmm"),
           function(X, i=1, j=2, q=1, restrict.Q=NULL, fix.Q=NULL,
                    nTests=100, alpha=0.05, R.code.only=FALSE) {
-
+            
             p <- X$p
             varNames <- X$X
-
+            
             param <- .processParameters(varNames, p, p, 0, p+1L, i=i, j=j, q=q,
                                         restrict.Q=restrict.Q, fix.Q=fix.Q)
             i <- param$i
             j <- param$j
             restrict.Q <- param$restrict.Q
             fix.Q <- param$fix.Q
-
+            
             if (R.code.only)
               stop("R.code.only=TRUE is not implemented yet.")
-
+            
             ssd <- new("SsdMatrix", ssd=as(X$sigma, "dspMatrix"), n=NA_real_)
             matrix(data=.qpEdgeNrr(NULL, ssd, i, j, q, restrict.Q, fix.Q, nTests,
                                    alpha, return.pcor=TRUE, R.code.only),
@@ -2011,22 +2011,22 @@ setMethod("qpPathWeight", signature(X="dspMatrix"),
 
 setMethod("qpPathWeight", signature(X="matrix"),
           function(X, path, Q=integer(0), M=integer(0), normalized=TRUE, R.code.only=TRUE) {
-
+            
             p <- (d <- dim(X))[1]
             if (p != d[2])
               stop("non-squared matrix in 'X'")
-
+            
             if (!isSymmetric(X))
               stop("non-symmetric matrix in 'X'")
-
+            
             if (class(X[1, 1]) != "numeric")
               stop("non-numeric values in 'X'")
-
+            
             if (!all(eigen(X)$values > 0))
               stop("non-positive definite matrix in 'X'")
-
+            
             S <- X
-
+            
             if (!is.null(colnames(S))) {
               allvtc <- colnames(S)
               if (!is.character(path))
@@ -2039,21 +2039,21 @@ setMethod("qpPathWeight", signature(X="matrix"),
               stopifnot(class(Q) != "character")
               stopifnot(class(M) != "character")
             }
-
+            
             R <- setdiff(allvtc, M)
             map2R <- vector(mode="integer", ncol(S))
             names(map2R) <- allvtc
             map2R[R] <- seq(along=R)
             edges <- cbind(map2R[path[-length(path)]], map2R[path[-1]])
             sgn <- ifelse(length(path) %% 2 == 0, -1, 1)
-
+            
             if (!R.code.only)
               stop("C implementation not yet available\n")
-
-              ## return(.Call("qp_fast_path_weight", S, as.integer(path), as.integer(Q),
-              ##                                     as.integer(R), as.integer(map2R), edges,
-              ##                                     as.integer(sgn), as.integer(normalized)))
-
+            
+            ## return(.Call("qp_fast_path_weight", S, as.integer(path), as.integer(Q),
+            ##                                     as.integer(R), as.integer(map2R), edges,
+            ##                                     as.integer(sgn), as.integer(normalized)))
+            
             K <- solve(S[R, R])
             rownames(K) <- colnames(K) <- R
             pw <- sgn*prod(K[edges])*det(S[path, path]) 
@@ -2063,7 +2063,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
               PCOV <- solve(K[c(fstvtx, lstvtx), c(fstvtx, lstvtx)])
               pw <- pw / sqrt(PCOV[1, 1] * PCOV[2, 2])
             }
-
+            
             pw
           })
 
@@ -2075,18 +2075,18 @@ setMethod("qpPathWeight", signature(X="matrix"),
 ## which integer values for i, j, restrict.Q or fix.Q could be based on.
 .processParameters <- function(varNames, ph, init_ph, s, n, i, j, q, I=NULL, Y=NULL,
                                restrict.Q=NULL, fix.Q=NULL) {
-
+  
   p <- length(varNames)
-
+  
   if (q < 0)
     stop(paste("q=", q, " < 0"))
-
+  
   if (q > p-2)
     stop(paste("q=", q, " > p-2=", p-2))
-
+  
   if (q > n-3)
     stop(paste("q=", q, " > n-3=", n-3))
-
+  
   if (is.character(i)) {
     if (is.na(match(i, varNames)))
       stop(sprintf("i=%s does not form part of the variable names of the data\n",i))
@@ -2095,7 +2095,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
     if (i > init_ph && i <= init_ph+s)
       i <- i - init_ph + ph
   }
-
+  
   if (is.character(j)) {
     if (is.na(match(j, varNames)))
       stop(sprintf("j=%s does not form part of the variable names of the data\n",j))
@@ -2104,7 +2104,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
     if (j > init_ph && j <= init_ph+s)
       j <- j - init_ph + ph
   }
-
+  
   if (!is.null(I)) {
     if (is.character(I)) {
       if (any(is.na(match(I, varNames))))
@@ -2112,7 +2112,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
       I <- match(I, varNames)
     }
   }
-
+  
   if (!is.null(Y)) {
     if (is.character(Y)) {
       if (any(is.na(match(Y, varNames))))
@@ -2120,7 +2120,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
       Y <- match(Y, varNames)
     }
   }
-
+  
   if (!is.null(fix.Q)) {
     if (is.character(fix.Q)) {
       if (any(is.na(match(fix.Q, varNames))))
@@ -2128,15 +2128,15 @@ setMethod("qpPathWeight", signature(X="matrix"),
       fix.Q <- match(fix.Q, varNames)
     } else
       fix.Q[fix.Q > init_ph & fix.Q <= init_ph+s] <- fix.Q[fix.Q > init_ph & fix.Q <= init_ph+s] - init_ph + ph
-
-
+    
+    
     if (any(!is.na(match(c(i, j), fix.Q))))
       stop("The subset fix.Q cannot include any of the (i, j) variables.\n")
-
+    
     if (q <= length(fix.Q))
       stop("q should be larger than the number of variables in fix.Q\n")
   }
-
+  
   if (!is.null(restrict.Q)) {
     if (is.character(restrict.Q)) {
       if (any(is.na(match(restrict.Q, varNames))))
@@ -2145,10 +2145,10 @@ setMethod("qpPathWeight", signature(X="matrix"),
     } else
       restrict.Q[restrict.Q > init_ph & restrict.Q <= init_ph+s] <- restrict.Q[restrict.Q > init_ph & restrict.Q <= init_ph+s] - init_ph + ph
   }
-
+  
   if (length(intersect(restrict.Q, fix.Q)) > 0)
     stop("The subsets restrict.Q and fix.Q should be disjoint.\n")
-
+  
   return(list(i=i, j=j, I=I, Y=Y, restrict.Q=restrict.Q, fix.Q=fix.Q))
 }
 
@@ -2158,38 +2158,38 @@ setMethod("qpPathWeight", signature(X="matrix"),
 .qpEdgeNrr <- function(X, S, i=1, j=2, q=1, restrict.Q=NULL, fix.Q=NULL,
                        nTests=100, alpha=0.05, return.pcor=FALSE,
                        R.code.only=FALSE) {
-
+  
   stopifnot(!is.null(X) || !is.null(S))
-
+  
   if (!R.code.only) { ## assume restrict.Q and fix.Q are coordinately set!!!!
     return(.qpFastEdgeNrr(X, S, i, j, q, restrict.Q, fix.Q, nTests, alpha, return.pcor));
   }
-
+  
   Qm <- NA
   work.with.margin <- FALSE
   if (is.null(S)) {
     work.with.margin <- TRUE
     Qm <- seq(3, q+2)
   }
-
+  
   p <- ifelse(!is.null(X), ncol(X), ncol(S))
   n <- ifelse(!is.null(X), nrow(X), S@n)
   V <- 1:p
   if (!is.null(restrict.Q))
     V <- restrict.Q
-
+  
   if (!is.null(fix.Q))
     V <- setdiff(V, fix.Q)
-
+  
   if (q > length(V)-2)
     stop(paste("q=", q, " > p-2=", p-2))
-
+  
   q.fix <- length(fix.Q)
   mt <- match(c(i, j), V)
   mt <- mt[!is.na(mt)]
   if (length(mt) > 0)
     V <- V[-mt]
-
+  
   thr <- qt(p=1-(alpha/2), df=n-q-2, lower.tail=TRUE, log.p=FALSE)
   lambda <- c()
   for (k in 1:nTests) {
@@ -2199,12 +2199,12 @@ setMethod("qpPathWeight", signature(X="matrix"),
       cit <- .qpCItest(S, 1L, 2L, Qm, R.code.only=TRUE)
     } else
       cit <- .qpCItest(S, as.integer(i), as.integer(j),
-                                 as.integer(Q), R.code.only=TRUE)
+                       as.integer(Q), R.code.only=TRUE)
     lambda  <- c(lambda, abs(cit$statistic))
   }
-
+  
   nAcceptedTests <- sum(lambda < thr)
-
+  
   return(nAcceptedTests / nTests)
 }
 
@@ -2228,9 +2228,9 @@ setMethod("qpPathWeight", signature(X="matrix"),
       nActualTests <- nActualTests + 1
     }
   }
-
+  
   nAcceptedTests <- sum(lambda < thr)
-
+  
   return(nAcceptedTests / nActualTests)
 }
 
@@ -2241,49 +2241,49 @@ setMethod("qpPathWeight", signature(X="matrix"),
                            restrict.Q=NULL, fix.Q=NULL, nTests=100,
                            alpha=0.05, exact.test=TRUE, use=c("complete.obs", "em"),
                            tol=0.01, R.code.only=FALSE) {
-
+  
   if (all(!is.na(match(c(i,j), I))))
     stop("i and j cannot be both discrete at the moment\n")
-
+  
   if (!is.na(match(j, I))) { ## if any of (i,j) is discrete, it should be i
     tmp <- i
     i <- j
     j <- tmp
   }
-
+  
   if (!R.code.only) {
     if (use == "em")
       stop("The EM algorithm is not yet implemented in the fast C version of the code for qpEdgeNrr(). Please set either use=\"complete.obs\" (default value) or R.code.only=TRUE\n")
-
+    
     return(.qpFastEdgeNrrHMGM(X, I, nLevels, Y, ssdMat, mapX2ssdMat, i, j, q,
-                                        restrict.Q, fix.Q, nTests, alpha, exact.test))
+                              restrict.Q, fix.Q, nTests, alpha, exact.test))
   }
-
+  
   p <- ncol(X)
   V <- 1:p
   if (!is.null(restrict.Q))
     V <- restrict.Q
-
+  
   if (!is.null(fix.Q))
     V <- setdiff(V, fix.Q)
-
+  
   if (q > length(V)-2)
     stop(paste("q=", q, " > p-2=", p-2))
-
+  
   q.fix <- length(fix.Q)
   mt <- match(c(i, j), V)
   mt <- mt[!is.na(mt)]
   if (length(mt) > 0)
     V <- V[-mt]
-
+  
   problematicQ <- NA
   nActualTests <- 0
   lambda <- a <- b <- thr <- rep(NA, times=nTests)
   for (k in 1:nTests) {
     Q <- c(sample(V, q-q.fix, replace=FALSE), fix.Q)
     cit <- .qpCItestHMGM(X, I, nLevels, Y, ssdMat, mapX2ssdMat, as.integer(i),
-                                   as.integer(j), as.integer(Q), exact.test,
-                                   use, tol, R.code.only=TRUE)
+                         as.integer(j), as.integer(Q), exact.test,
+                         use, tol, R.code.only=TRUE)
     if (!is.nan(cit$statistic)) {
       lambda[k] <- cit$statistic
       if (exact.test) {
@@ -2298,7 +2298,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
     } else
       problematicQ <- Q
   }
-
+  
   nAcceptedTests <- NA
   if (exact.test) {
     nAcceptedTests <- sum(lambda > thr, na.rm=TRUE)
@@ -2306,8 +2306,8 @@ setMethod("qpPathWeight", signature(X="matrix"),
     thr <- qchisq(p=(1-alpha), df=1, lower.tail=TRUE)
     nAcceptedTests <- sum(lambda < thr, na.rm=TRUE)
   }
-
-
+  
+  
   if (nActualTests < nTests)
     warning(paste(sprintf("Non-rejection rate estimation between i=%s and j=%s with q=%d was based on %d out of %d requested tests.\n",
                           colnames(X)[i], colnames(X)[j], q, nActualTests, nTests),
@@ -2316,7 +2316,7 @@ setMethod("qpPathWeight", signature(X="matrix"),
                   paste(colnames(X)[problematicQ], collapse=", "),
                   "}, could not be calculated. Try with smaller Q subsets or increase n if you can.\n",
                   sep=""))
-
+  
   return(nAcceptedTests / nActualTests)
 }
 
@@ -2355,9 +2355,9 @@ qpHist <- function(nrrMatrix, A=NULL,
     screen(1)
     H <- hist(nrr, plot=FALSE)
     if(freq){
-       yl <- c(0, max(H$counts))
+      yl <- c(0, max(H$counts))
     }else{
-       yl < NULL
+      yl < NULL
     }
     hist(nrr, freq=freq, col="yellow", xlim=nrr_rg, ylim=yl, main=titlehist,
          xlab="non-rejection rates")
@@ -2396,39 +2396,39 @@ qpHist <- function(nrrMatrix, A=NULL,
 ## return: adjacency matrix of the qp-graph
 
 .old_qpGraph <- function(nrrMatrix, threshold=NULL, topPairs=NULL, pairup.i=NULL,
-                    pairup.j=NULL, return.type=c("adjacency.matrix", "edge.list",
-                    "graphNEL", "graphAM", "graphBAM")) {
-
+                         pairup.j=NULL, return.type=c("adjacency.matrix", "edge.list",
+                                                      "graphNEL", "graphAM", "graphBAM")) {
+  
   warning("The function call 'qpGraph()' using arguments 'threshold' or 'return.type' is being deprecated and will dissapear in the next release version. Please consult the help page of qpGraph().")
-
+  
   return.type <- match.arg(return.type)
-
+  
   ## by now we need to coerce the dspMatrix into a regular matrix
   ## hopefully this can be removed in the near future
   nrrMatrix <- as(nrrMatrix, "matrix")
-
+  
   n.var <- nrow(nrrMatrix)
-
+  
   if (is.null(colnames(nrrMatrix))) {
     vertex.labels <- as.character(1:n.var)
   } else {
     vertex.labels <- colnames(nrrMatrix)
   }
-
+  
   if (is.null(threshold) && is.null(topPairs))
     stop("either threshold or topPairs should be set different to NULL\n")
-
+  
   if (!is.null(threshold) && !is.null(topPairs))
     stop("only either threshold or topPairs can be set different to NULL\n")
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("pairup.i and pairup.j should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (!is.null(pairup.i) && !is.null(pairup.j))  {
     if (is.null(colnames(nrrMatrix)))
       stop("when using pairup.i and pairup.j, nrrMatrix should have row and column names\n")
-
+    
     var.names <- colnames(nrrMatrix)
     pairup.i <- match(pairup.i, var.names)
     if (sum(is.na(pairup.i)) > 0)
@@ -2436,15 +2436,15 @@ qpHist <- function(nrrMatrix, A=NULL,
     pairup.j <- match(pairup.j, var.names)
     if (sum(is.na(pairup.j)) > 0)
       stop("pairup.j is not a subset of the variables forming the data\n")
-
+    
     pairup.ij.int <- intersect(pairup.i, pairup.j)
     pairup.i.noint <- setdiff(pairup.i, pairup.ij.int)
     pairup.j.noint <- setdiff(pairup.j, pairup.ij.int)
-
+    
     nomeasurementsMask <- matrix(FALSE,nrow=n.var,ncol=n.var)
     nomeasurementsMask[as.matrix(
-                       expand.grid(pairup.ij.int,
-                                   c(pairup.i.noint, pairup.j.noint)))] <- TRUE
+      expand.grid(pairup.ij.int,
+                  c(pairup.i.noint, pairup.j.noint)))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.i.noint, pairup.j.noint))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.ij.int, pairup.ij.int))] <- TRUE
     diag(nomeasurementsMask) <- FALSE
@@ -2452,10 +2452,10 @@ qpHist <- function(nrrMatrix, A=NULL,
     nomeasurementsMask <- !nomeasurementsMask
     nrrMatrix[nomeasurementsMask] <- NA
   }
-
+  
   # not-available NRRs imply no edges
   nrrMatrix[is.na(nrrMatrix)] <- 1.0
-
+  
   if (!is.null(threshold)) {
     A <- nrrMatrix <= threshold
   } else { # topPairs
@@ -2470,10 +2470,10 @@ qpHist <- function(nrrMatrix, A=NULL,
     A[ranking[1:topPairs, ]] <- TRUE
     A[cbind(ranking[1:topPairs, 2], ranking[1:topPairs, 1])] <- TRUE
   }
-
+  
   rownames(A) <- colnames(A) <- vertex.labels
   diag(A) <- FALSE # whatever the threshold is the graph should have no loops
-
+  
   if (return.type == "adjacency.matrix") {
     return(Matrix::Matrix(A))
   } else if (return.type == "edge.list") {
@@ -2499,7 +2499,7 @@ qpHist <- function(nrrMatrix, A=NULL,
     }
     return(g) ## graphBAM
   }
-
+  
   return(NA)
 }
 
@@ -2524,36 +2524,36 @@ qpHist <- function(nrrMatrix, A=NULL,
 qpAnyGraph <- function(measurementsMatrix, threshold=NA_real_, remove=c("below", "above"),
                        topPairs=NA_integer_, decreasing=TRUE, pairup.i=NULL, pairup.j=NULL) {
   p <- nrow(measurementsMatrix)
-
+  
   if (!isSymmetric(measurementsMatrix))
     stop("'measurementsMatrix' is not symmetric.")
-
+  
   remove <- match.arg(remove)
-
+  
   ## by now we need to coerce the dspMatrix into a regular matrix
   ## hopefully in the near future we can do also [<- on dspMatrix matrices
   ## measurementsMatrix <- as(measurementsMatrix, "matrix")
-
+  
   vertex.labels <- NULL
   if (is.null(colnames(measurementsMatrix))) {
     vertex.labels <- as.character(1:p)
   } else
     vertex.labels <- as.character(colnames(measurementsMatrix))
-
+  
   if (is.na(threshold) && is.na(topPairs))
     stop("either 'threshold' or 'topPairs' should be set different to NULL\n")
-
+  
   if (!is.na(threshold) && !is.na(topPairs))
     stop("only either 'threshold' or 'topPairs' can be set different to NULL\n")
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("'pairup.i' and 'pairup.j' should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (!is.null(pairup.i) && !is.null(pairup.j))  {
     if (is.null(colnames(measurementsMatrix)))
       stop("when using 'pairup.i' and 'pairup.j', measurementsMatrix should have row and column names\n")
-
+    
     var.names <- colnames(measurementsMatrix)
     pairup.i <- match(pairup.i, var.names)
     if (sum(is.na(pairup.i)) > 0)
@@ -2561,15 +2561,15 @@ qpAnyGraph <- function(measurementsMatrix, threshold=NA_real_, remove=c("below",
     pairup.j <- match(pairup.j, var.names)
     if (sum(is.na(pairup.j)) > 0)
       stop("'pairup.j' is not a subset of the variables forming the data\n")
-
+    
     pairup.ij.int <- intersect(pairup.i, pairup.j)
     pairup.i.noint <- setdiff(pairup.i, pairup.ij.int)
     pairup.j.noint <- setdiff(pairup.j, pairup.ij.int)
-
+    
     nomeasurementsMask <- matrix(FALSE,nrow=p,ncol=p)
     nomeasurementsMask[as.matrix(
-                       expand.grid(pairup.ij.int,
-                                   c(pairup.i.noint, pairup.j.noint)))] <- TRUE
+      expand.grid(pairup.ij.int,
+                  c(pairup.i.noint, pairup.j.noint)))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.i.noint, pairup.j.noint))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.ij.int, pairup.ij.int))] <- TRUE
     diag(nomeasurementsMask) <- FALSE
@@ -2577,7 +2577,7 @@ qpAnyGraph <- function(measurementsMatrix, threshold=NA_real_, remove=c("below",
     nomeasurementsMask <- !nomeasurementsMask
     measurementsMatrix[nomeasurementsMask] <- NA
   }
-
+  
   measurementsUT <- measurementsMatrix[upper.tri(measurementsMatrix)]
   df <- NULL
   if (!is.na(threshold)) {                                  ## threshold
@@ -2602,7 +2602,7 @@ qpAnyGraph <- function(measurementsMatrix, threshold=NA_real_, remove=c("below",
                      weight=rep(1, topPairs),
                      stringsAsFactors=FALSE)
   }
-
+  
   graphBAM(df, nodes=vertex.labels)
 }
 
@@ -2630,9 +2630,9 @@ qpGraphDensity <- function(nrrMatrix, threshold.lim=c(0,1), breaks=5,
                            plot=TRUE, qpGraphDensityOutput=NULL,
                            density.digits=0,
                            titlegd="graph density as function of threshold") {
-
+  
   if (is.null(qpGraphDensityOutput)) {
-
+    
     if (length(breaks) == 1) {
       len <- threshold.lim[2] - threshold.lim[1]
       br <- seq(threshold.lim[1],threshold.lim[2],by=len/breaks)
@@ -2640,35 +2640,35 @@ qpGraphDensity <- function(nrrMatrix, threshold.lim=c(0,1), breaks=5,
       br <- breaks
       threshold.lim = range(br)
     }
-
+    
     matgdthr <- matrix(rep(0,length(br)*2),nrow=length(br),ncol=2)
     colnames(matgdthr) <- c("density", "threshold")
     n.var <- nrow(nrrMatrix)
     n.adj <- n.var*(n.var-1)/2
-
+    
     ## by now we coerce this to a regular matrix
     nrrMatrix <- as(nrrMatrix, "matrix")
-
+    
     for (i in 1:length(br)) {
       threshold <- br[i]
       nrrMatrix[is.na(nrrMatrix)] <- 1.0 # non-available NRRs imply no edges
       A <- nrrMatrix <= threshold
       diag(A) <- FALSE # if the threshold is 1.0 the resulting qp-graph
-                       # will be the complete undirected graph but
-                       # still it should have no loops
+      # will be the complete undirected graph but
+      # still it should have no loops
       n.edg <- sum(A) / 2
       gd <- (n.edg / n.adj) * 100
       matgdthr[i,] <- c(gd,threshold)
     }
-
+    
   } else {
     br <- qpGraphDensityOutput$data[,2]
     matgdthr <- qpGraphDensityOutput$data
   }
-
+  
   linetype <- 1
   label <- "graph density"
-
+  
   if (plot == TRUE) {
     plot(br,matgdthr[,1],type="o",xlim=threshold.lim,
          ylim=range(1,matgdthr[,1]),lwd=2,lty=linetype,
@@ -2677,12 +2677,12 @@ qpGraphDensity <- function(nrrMatrix, threshold.lim=c(0,1), breaks=5,
     text(br,matgdthr[,1],lab=paste(pct,"%",sep=""),pos=1,cex=.7)
     legend(min(threshold.lim),max(matgdthr[,1]),label,lty=linetype,lwd=2,pch=1)
   }
-
+  
   m <- matgdthr[,c(2,1)]
   m[,2] <- m[,2] / 100
   f <- approxfun(m)
   area <- integrate(f,min(m[,1]),max(m[,1]))
-
+  
   invisible(list(data=matgdthr,sparseness=1-area$value))
 }
 
@@ -2706,77 +2706,77 @@ qpGraphDensity <- function(nrrMatrix, threshold.lim=c(0,1), breaks=5,
 
 qpCliqueNumber <- function(g, exact.calculation=TRUE, return.vertices=FALSE,
                            approx.iter=100, verbose=TRUE, R.code.only=FALSE) {
-
+  
   if (class(g) == "graphNEL" || class(g) == "graphAM" || class(g) == "graphBAM") {
     if (graph::edgemode(g) != "undirected")
       stop("g should be an undirected graph\n")
-
+    
     A <- as(g, "matrix") == 1
   } else if (class(g) == "matrix" || length(grep("Matrix", class(g))) > 0) {
     A <- g
     p <- (d <- dim(A))[1]
     if (p != d[2])
       stop("g is not an squared adjacency matrix nor a graphNEL, graphAM or graphBAM object\n")
-
+    
     if (!isSymmetric(A))
       stop("g is not a symmetric adjacency matrix nor a graphNEL, graphAM or graphBAM object\n")
   } else
     stop("g should be either a graphNEL object, a graphAM object, a graphBAM object or a boolean adjacency matrix\n")
-
+  
   if (exact.calculation && R.code.only)
     stop("R code is only available for the lower bound approximation and not for the exact calculation\n");
-
+  
   n.var <- nrow(A)
   n.possibleedges <- (n.var * (n.var-1)) / 2
-
+  
   if (!any(A)) {
     maximum_clique <- 1
     if (return.vertices) {
-        maximum_clique <- list(size=clique.number,vertices=1)
+      maximum_clique <- list(size=clique.number,vertices=1)
     }
     return(maximum_clique)
   }
-
+  
   if (sum(A[upper.tri(A)]) == n.possibleedges) {
     maximum_clique <- n.var
     if (return.vertices) {
-        maximum_clique <- list(size=clique.number,vertices=1:n.var)
+      maximum_clique <- list(size=clique.number,vertices=1:n.var)
     }
     return(maximum_clique)
   }
-
+  
   maximum_clique <- 0
-
+  
   if (exact.calculation == TRUE) {
-
+    
     A <- A == 1 ## make sure we get a boolean matrix
-
+    
     maximum_clique <-
       .qpCliqueNumberOstergard(as.matrix(A),
-                                         return.vertices=return.vertices,
-                                         verbose=verbose)
+                               return.vertices=return.vertices,
+                               verbose=verbose)
   } else {
     if (!R.code.only)
       maximum_clique <-
         .qpCliqueNumberLowerBound(as.matrix(A),
-                                            return.vertices=return.vertices,
-                                            approx.iter=approx.iter,
-                                            verbose=verbose)
+                                  return.vertices=return.vertices,
+                                  approx.iter=approx.iter,
+                                  verbose=verbose)
     else {
       if (verbose) {
         cat("calculating lower bound on the maximum clique size\n")
       }
-
+      
       clique.number <- 0
       clique.vertices <- c()
-
+      
       A <- as.matrix(A) + 0 ## make sure we get a 0-1 matrix
       deg <- sort(rowsum(A, rep(1,n.var)), index.return=TRUE,
                   decreasing=TRUE) ## order by degree
-
+      
       ppct <- -1
       for (i in 1:approx.iter) {
-
+        
         pdeg <- deg$ix
         if (i %% n.var + 1 > 1) {
           sset <- sample(1:n.var, i %% n.var + 1, replace=FALSE) ## we alter the order of the ranking
@@ -2793,12 +2793,12 @@ qpCliqueNumber <- function(g, exact.calculation=TRUE, return.vertices=FALSE,
             clq <- clq2
           }
         }
-                                                                                            
+        
         if (length(clq) > clique.number) {
           clique.number <- length(clq)
           clique.vertices <- clq
         }
-
+        
         if (verbose) {
           pct <- floor((i*100)/approx.iter)
           if (pct != ppct) {
@@ -2811,19 +2811,19 @@ qpCliqueNumber <- function(g, exact.calculation=TRUE, return.vertices=FALSE,
           }
         }
       }
-
+      
       if (verbose) {
         cat("\n")
       }
-
+      
       maximum_clique <- clique.number
       if (return.vertices) {
         maximum_clique <- list(size=clique.number,vertices=clique.vertices)
       }
     }
-
+    
   }
-
+  
   return(maximum_clique)
 }
 
@@ -2869,9 +2869,9 @@ qpClique <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, plot=TRUE,
                      verbose=FALSE) {
   n.var <- nrow(nrrMatrix)
   n.adj <- n.var*(n.var-1)/2
-
+  
   if (is.null(qpCliqueOutput)) {
-
+    
     if (length(breaks) == 1) {
       len <- threshold.lim[2] - threshold.lim[1]
       br <- seq(threshold.lim[1],threshold.lim[2],by=len/breaks)
@@ -2879,15 +2879,15 @@ qpClique <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, plot=TRUE,
       br <- breaks
       threshold.lim <- range(br)
     }
-
+    
     maxclqszeunderN <- 0
     thrmaxclqszeunderN <- 0
     mpctedclqsze <- matrix(rep(0,length(br)*3),nrow=length(br),ncol=3)
     colnames(mpctedclqsze) <- c("density","clqsize","threshold")
-
+    
     ## by now we coerce this to a regular matrix
     nrrMatrix <- as(nrrMatrix, "matrix")
-
+    
     for (i in 1:length(br)) {
       if (verbose) {
         cat(paste("break: ",i,sep=""))
@@ -2897,12 +2897,12 @@ qpClique <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, plot=TRUE,
       nrrMatrix[is.na(nrrMatrix)] <- 1.0 # non-available NRRs imply no edges
       A <- nrrMatrix <= threshold
       diag(A) <- FALSE # if the threshold is 1.0 the resulting qp-graph
-                       # will be the complete undirected graph but
-                       # still it should have no loops
+      # will be the complete undirected graph but
+      # still it should have no loops
       n.edg <- sum(A) / 2
       dimnames(A) <- list(1:length(A[,1]), 1:length(A[1,]))
       maxsize <- qpCliqueNumber(A, exact.calculation, approx.iter=approx.iter,
-                                  verbose=verbose)
+                                verbose=verbose)
       mpctedclqsze[i,] <- c((n.edg / n.adj) * 100, maxsize, threshold)
       if (!is.na(n)) {
         if (maxsize > maxclqszeunderN && maxsize < n) {
@@ -2911,10 +2911,10 @@ qpClique <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, plot=TRUE,
         }
       }
     }
-
+    
     if (is.na(n))
       maxclqszeunderN <- thrmaxclqszunderN <- NA
-
+    
   } else {
     br <- qpCliqueOutput$data[,3]
     mpctedclqsze <- qpCliqueOutput$data
@@ -2923,14 +2923,14 @@ qpClique <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, plot=TRUE,
     n <- qpCliqueOutput$N
     exact.calculation <- qpCliqueOutput$exact.calculation 
   }
-
+  
   linetype <- 1
   label <- "exact maximum clique size"
   if (exact.calculation == FALSE) {
     linetype <- 2
     label <- "lower bound on the maximum clique size"
   }
-
+  
   if (plot == TRUE) {
     logscale <- ""
     if (logscale.clqsize == TRUE) {
@@ -2945,12 +2945,12 @@ qpClique <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, plot=TRUE,
     text(br,mpctedclqsze[,2],lab=paste(pct,"%",sep=""),pos=1,cex=.7)
     legend(min(threshold.lim),max(n,mpctedclqsze[,2],na.rm=TRUE),label,lty=linetype,lwd=2,pch=1)
   }
-
+  
   m <- mpctedclqsze[,c(3,2)]
   m[,2] <- m[,2] / n.var
   f <- approxfun(m)
   area <- integrate(f,min(m[,1]),max(m[,1]))
-
+  
   invisible(list(data=mpctedclqsze,complexity=area$value,threshold=thrmaxclqszeunderN,
                  clqsizeunderN=maxclqszeunderN,n=n,exact.calculation=exact.calculation))
 }
@@ -2990,9 +2990,9 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
                        verbose=FALSE) {
   n.var <- nrow(nrrMatrix)
   n.adj <- n.var*(n.var-1)/2
-
+  
   if (is.null(qpBoundaryOutput)) {
-
+    
     if (length(breaks) == 1) {
       len <- threshold.lim[2] - threshold.lim[1]
       br <- seq(threshold.lim[1],threshold.lim[2],by=len/breaks)
@@ -3000,15 +3000,15 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
       br <- breaks
       threshold.lim <- range(br)
     }
-
+    
     maxbdszeunderN <- 0
     thrmaxbdszeunderN <- 0
     mpctedbdsze <- matrix(rep(0,length(br)*3),nrow=length(br),ncol=3)
     colnames(mpctedbdsze) <- c("density","bdsize","threshold")
-
+    
     ## by now we coerce this to a regular matrix
     nrrMatrix <- as(nrrMatrix, "matrix")
-
+    
     for (i in 1:length(br)) {
       if (verbose) {
         cat(paste("break: ",i,sep=""))
@@ -3018,14 +3018,14 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
       nrrMatrix[is.na(nrrMatrix)] <- 1.0 # non-available NRRs imply no edges
       A <- nrrMatrix <= threshold
       diag(A) <- FALSE # if the threshold is 1.0 the resulting qp-graph
-                       # will be the complete undirected graph but
-                       # still it should have no loops
+      # will be the complete undirected graph but
+      # still it should have no loops
       n.edg <- sum(A) / 2
       ## dimnames(A) <- list(1:length(A[,1]), 1:length(A[1,])) WHY THIS ???
       maxsize <- max(rowSums(A))
       if (!is.null(vertexSubset))
         maxsize <- max(rowSums(A[vertexSubset, ]))
-
+      
       mpctedbdsze[i,] <- c((n.edg / n.adj) * 100, maxsize, threshold)
       if (!is.na(n)) {
         if (maxsize > maxbdszeunderN && maxsize < n) {
@@ -3034,10 +3034,10 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
         }
       }
     }
-
+    
     if (is.na(n))
       maxbdszeunderN <- thrmaxbdszunderN <- NA
-
+    
   } else {
     br <- qpBoundaryOutput$data[,3]
     mpctedbdsze <- qpBoundaryOutput$data
@@ -3046,11 +3046,11 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
     n <- qpBoundaryOutput$n
     vertexSubset <- qpBoundaryOutput$vertexSubset
   }
-
+  
   linetype <- 1
   label <- "Maximum boundary size"
   whlog0 <- NULL
-
+  
   if (plot == TRUE) {
     logscale <- ""
     if (logscale.bdsize == TRUE) {
@@ -3069,15 +3069,15 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
     text(br,mpctedbdsze[,2],lab=paste(pct,"%",sep=""),pos=1,cex=.7)
     legend(min(threshold.lim),max(n,mpctedbdsze[,2],na.rm=TRUE),label,lty=linetype,lwd=2,pch=1)
   }
-
+  
   if (!is.null(whlog0))
     mpctedbdsze[whlog0, 2] <- 0
-
+  
   m <- mpctedbdsze[,c(3,2)]
   m[,2] <- m[,2] / n.var
   f <- approxfun(m)
   area <- integrate(f,min(m[,1]),max(m[,1]))
-
+  
   invisible(list(data=mpctedbdsze, complexity=area$value, threshold=thrmaxbdszeunderN,
                  bdsizeunderN=maxbdszeunderN, n=n, vertexSubset=vertexSubset))
 }
@@ -3101,23 +3101,23 @@ qpBoundary <- function(nrrMatrix, n=NA, threshold.lim=c(0,1), breaks=5, vertexSu
 ## return: a list of maximal cliques
 
 qpGetCliques <- function(g, clqspervtx=FALSE, verbose=TRUE) {
-
+  
   if (class(g) == "graphNEL" || class(g) == "graphAM" || class(g) == "graphBAM") {
     if (graph::edgemode(g) != "undirected")
       stop("g should be an undirected graph\n")
-
+    
     A <- as(g, "matrix") == 1
   } else if (class(g) == "matrix" || length(grep("Matrix", class(g))) > 0) {
     A <- g
     p <- (d <- dim(A))[1]
     if (p != d[2])
       stop("g is not an squared matrix nor a graphNEL object\n")
-
+    
     if (!isSymmetric(A))
       stop("g is not a symmetric matrix nor a graphNEL object\n")
   } else
     stop("g should be either a graphNEL object, a graphAM object, a graphBAM object or a boolean adjacency matrix\n")
-
+  
   p <- dim(A)[1]
   nEd <- sum(A)/2
   if (nEd == 0) {
@@ -3126,14 +3126,14 @@ qpGetCliques <- function(g, clqspervtx=FALSE, verbose=TRUE) {
       clqlst <- c(clqlst, as.list(1:p))
     return(clqlst)
   }
-
+  
   if (nEd == (p*(p-1))/2) {
     clqlst <- list(1:p)
     if (clqspervtx)
       clqlst <- c(clqlst, as.list(rep(1, times=p)))
     return(clqlst)
   }
-
+  
   return(.qpFastCliquerGetCliques(as.matrix(A), clqspervtx=clqspervtx,
                                   verbose=verbose))
 }
@@ -3164,31 +3164,31 @@ qpUpdateCliquesRemoving <- function(g, clqlst, v, w, verbose=TRUE) {
   if (class(g) == "graphNEL" || class(g) == "graphAM" || class(g) == "graphBAM") {
     if (graph::edgemode(g) != "undirected")
       stop("g should be an undirected graph\n")
-
+    
     A <- as(g, "matrix") == 1
   } else if (class(g) == "matrix" || length(grep("Matrix", class(g))) > 0) {
     A <- g
     p <- (d <- dim(A))[1]
     if (p != d[2])
       stop("g is not an squared matrix nor a graphNEL object\n")
-
+    
     if (!isSymmetric(A))
       stop("g is not a symmetric matrix nor a graphNEL object\n")
   } else
     stop("g should be either a graphNEL object, a graphAM object, a graphBAM object or a boolean adjacency matrix\n")
-
+  
   if (is.character(v)) {
     v <- match(v, colnames(A))
     if (is.na(v))
       stop("vertex ", v, " does not match any vertex in 'g'\n")
   }
-
+  
   if (is.character(w)) {
     w <- match(w, colnames(A))
     if (is.na(w))
       stop("vertex ", w, " does not match any vertex in 'g'\n")
   }
-
+  
   return(.qpFastUpdateCliquesRemoving(as.matrix(A), clqlst, v, w, verbose=verbose))
 }
 
@@ -3209,16 +3209,16 @@ qpUpdateCliquesRemoving <- function(g, clqlst, v, w, verbose=TRUE) {
 ##             R.code.only - flag set to FALSE when using the C implementation
 ## return: the input matrix adjusted to the constraints of the list of cliques
 
-qpIPF <- function(vv, clqlst, tol = 0.001, verbose = FALSE,
+qpIPF <- function(vv, clqlst, tol = 0.001, iter=500, verbose = FALSE,
                   R.code.only = FALSE) {
-
+  
   ## this should be changed so that the rest of the algorithm deals with dspMatrix matrices
   vv <- as(vv, "matrix")
-
+  
   if (!R.code.only) {
-    return(.qpFastIPF(vv, clqlst, tol, verbose))
+    return(.qpFastIPF(vv, clqlst, tol, verbose, iter))
   }
-
+  
   if (verbose) {
     n.var <- nrow(vv)
     if (clqlst[[1]][1] <= n.var) {
@@ -3226,7 +3226,7 @@ qpIPF <- function(vv, clqlst, tol = 0.001, verbose = FALSE,
     }
     cat(paste(paste("qpIPF: ",length(clqlst)-n.var),"cliques\n"))
   }
-
+  
   V <- diag(length(vv[, 1]))
   precision <- 1
   while(precision > tol) {
@@ -3236,7 +3236,7 @@ qpIPF <- function(vv, clqlst, tol = 0.001, verbose = FALSE,
     if (verbose)
       cat("qpIPF: precision =", precision, "\n")
   }
-
+  
   return(as(V, "dspMatrix"))
 }
 
@@ -3259,10 +3259,10 @@ qpIPF <- function(vv, clqlst, tol = 0.001, verbose = FALSE,
 
 qpHTF <- function(S, g, tol = 0.001, verbose = FALSE,
                   R.code.only = FALSE) {
-
+  
   ## this should be changed so that the rest of the algorithm deals with dspMatrix matrices
   S <- as(S, "matrix")
-
+  
   A <- NULL
   n.var <- NULL
   var.names <- NULL
@@ -3283,23 +3283,23 @@ qpHTF <- function(S, g, tol = 0.001, verbose = FALSE,
     var.names <- nodes(g)
     A <- as(g, "matrix") == 1 ## get a logical adjacency matrix
   }
-
+  
   if (is.null(n.var))
     stop("'g' is neither an adjacency matrix, a graphNEL, a graphAM or a graphBAM object.\n")
-
+  
   if (verbose)
     cat("qpHTF: maximum boundary =", max(rowSums(A)), "\n") 
-
-
+  
+  
   if (!R.code.only) {
     return(.qpFastHTF(S, A, tol, verbose))
   }
-
+  
   ppct <- -1
   pb <- NULL
   if (verbose)
     pb <- txtProgressBar(style=3)
-
+  
   W <- Wprev <- S
   precision <- 1
   while (precision > tol) {
@@ -3313,7 +3313,7 @@ qpHTF <- function(S, g, tol = 0.001, verbose = FALSE,
       beta[Ai] <- solve(W11[Ai, Ai, drop=FALSE], s12[Ai, , drop=FALSE])
       w <- W11 %*% beta
       W[-i, i] <- W[i, -i] <- w
-
+      
       pct <- floor((i * 100) / n.var)
       if (pct != ppct && verbose) {
         setTxtProgressBar(pb, pct/100)
@@ -3324,7 +3324,7 @@ qpHTF <- function(S, g, tol = 0.001, verbose = FALSE,
     if (verbose)
       cat("\nqpHTF: precision =", precision, "\n")
   }
-
+  
   return(as(W, "dspMatrix"))
 }
 
@@ -3371,7 +3371,7 @@ setMethod("qpPAC", signature(X="data.frame"),
             X <- as.matrix(X)
             if (!is.double(X))
               stop("X should be double-precision real numbers\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
@@ -3380,16 +3380,16 @@ setMethod("qpPAC", signature(X="data.frame"),
             .qpPAC(X, g, return.K, tol, matrix.completion, verbose, R.code.only)
           })
 
-          
+
 # data comes as a matrix
 setMethod("qpPAC", signature(X="matrix"),
           function(X, g, return.K=FALSE, long.dim.are.variables=TRUE,
                    tol=0.001, matrix.completion=c("HTF", "IPF"), verbose=TRUE,
                    R.code.only=FALSE) {
             if (long.dim.are.variables &&
-              sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
+                sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
             .qpPAC(X, g, return.K, tol, matrix.completion, verbose, R.code.only)
@@ -3398,73 +3398,73 @@ setMethod("qpPAC", signature(X="matrix"),
 .qpPAC <- function(X, g, return.K=FALSE, tol=0.001, matrix.completion=c("HTF", "IPF"),
                    verbose=TRUE, R.code.only=FALSE) {
   matrix.completion <- match.arg(matrix.completion)
-
+  
   A <- matrix(FALSE, nrow=ncol(X), ncol=ncol(X), dimnames=list(colnames(X), colnames(X)))
   if (class(g) == "qpGraph")
     g <- g$g
-
+  
   if (class(g) == "graphNEL" || class(g) == "graphAM" || class(g) == "graphBAM") {
     if (graph::edgemode(g) != "undirected")
       stop("g should be an undirected graph\n")
-
+    
     Ag <- as(g, "matrix") == 1
     if (any(is.na(match(rownames(Ag), colnames(X)))))
       stop("some variables in the graph 'g' do not match the variables in the data")
-
+    
     A[rownames(Ag), colnames(Ag)] <- Ag
   } else if (class(g) == "matrix" || length(grep("Matrix", class(g))) > 0) {
     A <- g
     p <- (d <- dim(A))[1]
     if (p != d[2])
       stop("g is not an squared matrix nor a graphNEL object\n")
-
+    
     if (!isSymmetric(A))
       stop("g is not a symmetric matrix nor a graphNEL object\n")
   } else
     stop("g should be either a graphNEL object or a boolean adjacency matrix\n")
-
+  
   var.names <- colnames(X)
   n.var <- ncol(X)
   N <- nrow(X)
-
+  
   ## calculate sample covariance matrix
   S <- qpCov(X)
-
+  
   ## ensure rows and columns follow the same order
   A <- A[rownames(S), colnames(S)]
-
+  
   if (matrix.completion == "IPF") {
     ## get the list of maximal cliques
     clqlst <- qpGetCliques(A, verbose=verbose)
-
+    
     ## get a maximum likelihood estimate of the sample covariance matrix
     ## using the clique list and the IPF algorithm
     Shat <- qpIPF(S, clqlst, tol=tol, verbose=verbose, R.code.only=R.code.only)
   } else
     Shat <- qpHTF(S, A, tol=tol, verbose=verbose, R.code.only=R.code.only)
-
+  
   ## estimate partial correlation coefficients and their standard errors
-
+  
   K <- solve(Shat)
   SE <- .qpEdgePACSE(Shat, A, R.code.only=R.code.only)
-
+  
   ## return matrices of partial correlations, standard errors
   ## and p-values for every edge
-
+  
   C <- N * (K^2 / SE)
   rho_coef <- qpK2ParCor(K)
   p.values <- 1 - pchisq(C, df=1)
   dimnames(rho_coef) <- dimnames(p.values) <- list(var.names, var.names)
-
+  
   list2return <- list()
-
+  
   if (return.K)
     list2return <- list(R=as(forceSymmetric(rho_coef), "dspMatrix"),
                         P=as(forceSymmetric(p.values), "dspMatrix"), K=Matrix(K))
   else
     list2return <- list(R=as(forceSymmetric(rho_coef), "dspMatrix"),
                         P=as(forceSymmetric(p.values), "dspMatrix"))
-
+  
   return(list2return)
 }
 
@@ -3497,7 +3497,7 @@ setMethod("qpPCC", signature(X="data.frame"),
             X <- as.matrix(X)
             if (!is.double(X))
               stop("X should be double-precision real numbers\n")
-
+            
             if (long.dim.are.variables &&
                 sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
@@ -3506,40 +3506,40 @@ setMethod("qpPCC", signature(X="data.frame"),
             .qpPCC(X)
           })
 
-          
+
 # X comes as a matrix
 setMethod("qpPCC", signature(X="matrix"),
           function(X, long.dim.are.variables=TRUE) {
             if (long.dim.are.variables &&
-              sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
+                sort(dim(X),decreasing=TRUE,index.return=TRUE)$ix[1] == 1)
               X <- t(X)
-
+            
             if (is.null(colnames(X))) 
               colnames(X) <- 1:ncol(X)
             .qpPCC(X)
           })
 
 .qpPCC <- function(X) {
-
+  
   var.names <- colnames(X)
-
+  
   ## calculate sample covariance matrix
   S <- qpCov(X)
   N <- S@n
-
+  
   ## estimate PCCs by scaling the covariance matrix
   ## somehow Matrix::cov2cor() refuses to scale non-positive definite matrices stored as dspMatrix objects (?)
   R <- as(Matrix::cov2cor(as.matrix(S)), "dspMatrix")
-
+  
   ## calculate t-statistics
   T <- (N - 2) / (1 - R*R)
   diag(T) <- (N - 2) * 100000 # just to get 0 p-values on the diagonal
   T <- R * sqrt(T)
-
+  
   ## calculate two-sided p-values
   p <- pt(as.matrix(T), df=N - 2)
   P <- as(2 * pmin(p, 1 - p), "dspMatrix")
-
+  
   list(R=R, P=P)
 }
 
@@ -3584,27 +3584,27 @@ qpK2ParCor <- function(K) {
 qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
                               pairup.i=NULL, pairup.j=NULL,
                               recallSteps=seq(0.0, 1.0, by=0.1)) {
-
+  
   if (class(measurementsMatrix) != "matrix" && class(measurementsMatrix) != "dspMatrix" &&
       class(measurementsMatrix) != "dgeMatrix")
     stop("measurementsMatrix should be a numerical matrix\n")
-
+  
   p <- (d <- dim(measurementsMatrix))[1]
   if (p != d[2])
     stop("measurementsMatrix should be a squared matrix\n")
-
+  
   if (class(refGraph) != "data.frame" && class(refGraph) != "matrix" &&
       class(refGraph) != "graphNEL" && class(refGraph) != "graphAM" &&
       class(refGraph) != "graphBAM" &&
       length(grep("Matrix", class(refGraph))) == 0)
     stop("refGraph should be provided either as an adjacency matrix, a two-column matrix of edges, a graphNEL object, a graphAM object or a graphBAM object\n")
-
+  
   if (class(refGraph) == "data.frame" || class(refGraph) == "matrix" ||
       length(grep("Matrix", class(refGraph))) > 0) {
     p <- (d <- dim(refGraph))[1]
     if (p != d[2] && ncol(refGraph) != 2)
       stop("If refGraph is a matrix then it should be either a squared adjacency matrix or a two-column matrix with rows corresponding to edges \n")
-
+    
     if (p != d[2] && ncol(refGraph) == 2) {
       if (class(refGraph[1, 1]) == "character") {
         refGraph <- cbind(match(refGraph[, 1], rownames(measurementsMatrix)),
@@ -3612,9 +3612,9 @@ qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
         if (any(is.na(refGraph)))
           stop("Some of the identifiers in refGraph do not correspond to row and column names in measurementsMatrix\n")
       }
-
+      
       refA <- matrix(FALSE, nrow=nrow(measurementsMatrix),
-                            ncol=ncol(measurementsMatrix))
+                     ncol=ncol(measurementsMatrix))
       refA[as.matrix(refGraph)] <- TRUE
       refA <- refA | t(refA)
       rownames(refA) <- colnames(refA) <- rownames(measurementsMatrix)
@@ -3624,7 +3624,7 @@ qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
           ncol(measurementsMatrix) != ncol(refA))
         stop("measurementsMatrix and refGraph should have the same dimensions\n")
     }
-
+    
   } else { ## graphNEL, graphAM or graphBAM
     if (any(is.na(match(graph::nodes(refGraph), rownames(measurementsMatrix)))) ||
         length(graph::nodes(refGraph)) != dim(measurementsMatrix)[1])
@@ -3635,21 +3635,21 @@ qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
       refA <- refA[, match(colnames(measurementsMatrix), colnames(refA)), ] ## re-order columns
     }
   }
-
+  
   n.var <- nrow(measurementsMatrix)
-
+  
   ## by now we have to coerce it to a regular matrix
   ## but hopefully in the near future we can do [<- as well on a dspMatrix
   measurementsMatrix <- as.matrix(measurementsMatrix)
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("pairup.i and pairup.j should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (!is.null(pairup.i) && !is.null(pairup.j))  {
     if (is.null(colnames(measurementsMatrix)))
       stop("when using pairup.i and pairup.j, measurementsMatrix should have row and column names\n")
-
+    
     var.names <- colnames(measurementsMatrix)
     pairup.i <- match(pairup.i, var.names)
     if (sum(is.na(pairup.i)) > 0)
@@ -3657,15 +3657,15 @@ qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
     pairup.j <- match(pairup.j, var.names)
     if (sum(is.na(pairup.j)) > 0)
       stop("pairup.j is not a subset of the variables forming the data\n")
-
+    
     pairup.ij.int <- intersect(pairup.i, pairup.j)
     pairup.i.noint <- setdiff(pairup.i, pairup.ij.int)
     pairup.j.noint <- setdiff(pairup.j, pairup.ij.int)
-
+    
     nomeasurementsMask <- matrix(FALSE, nrow=n.var, ncol=n.var)
     nomeasurementsMask[as.matrix(
-                       expand.grid(pairup.ij.int,
-                                   c(pairup.i.noint, pairup.j.noint)))] <- TRUE
+      expand.grid(pairup.ij.int,
+                  c(pairup.i.noint, pairup.j.noint)))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.i.noint, pairup.j.noint))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.ij.int, pairup.ij.int))] <- TRUE
     diag(nomeasurementsMask) <- FALSE
@@ -3673,48 +3673,48 @@ qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
     nomeasurementsMask <- !nomeasurementsMask
     measurementsMatrix[nomeasurementsMask] <- NA
   }
-
+  
   upperTriRow <- row(measurementsMatrix)[upper.tri(measurementsMatrix) &
-                                         !is.na(measurementsMatrix)]
+                                           !is.na(measurementsMatrix)]
   upperTriCol <- col(measurementsMatrix)[upper.tri(measurementsMatrix) &
-                                         !is.na(measurementsMatrix)]
+                                           !is.na(measurementsMatrix)]
   measurementsUpperTriMatrix <- measurementsMatrix[upper.tri(measurementsMatrix) &
-                                                   !is.na(measurementsMatrix)]
+                                                     !is.na(measurementsMatrix)]
   orderedMeasurements <- sort(measurementsUpperTriMatrix,index.return=TRUE,
                               decreasing=decreasing)
   edgeRnk <- cbind(upperTriRow[orderedMeasurements$ix],
                    upperTriCol[orderedMeasurements$ix],
                    orderedMeasurements$x)
-
+  
   lenRnk <- dim(edgeRnk)[1]
   total_positives <- sum(refA[upper.tri(refA) & !is.na(measurementsMatrix)])
-
+  
   status <- refA[as.matrix(edgeRnk[,c(1,2)])]
   status_tp <- rep(0, length(status))
   status_tp[status] <- 1:total_positives
   status_tp[which.max(status_tp):length(status_tp)] <- total_positives
   preRec <- matrix(0, nrow=length(recallSteps), ncol=5)
   colnames(preRec) <- c("Recall","Precision", "TP", "FP", "ScoreThreshold")
-
+  
   for (i in 1:length(recallSteps)) {
     tp <- round(recallSteps[i] * total_positives, digits=0)
     rnkPos <- max(c(0, (1:lenRnk)[status_tp <= tp & status_tp != 0]))
     fp <- rnkPos - tp
-
+    
     actualRecall <- tp / total_positives
     if (tp + fp > 0)
       precision <- tp / (tp + fp)
     else
       precision <- 1.0
-
+    
     if (rnkPos > 0)
       scoreThreshold <- edgeRnk[rnkPos, 3]
     else
       scoreThreshold <- NA
-
+    
     preRec[i, ] <- c(actualRecall, precision, tp, fp, scoreThreshold)
   }
-
+  
   return(preRec)
 }
 
@@ -3738,23 +3738,23 @@ qpPrecisionRecall <- function(measurementsMatrix, refGraph, decreasing=TRUE,
 qpPRscoreThreshold <- function(preRecFun, level, recall.level=TRUE,
                                max.score=9999999) {
   preRecFun[1, "ScoreThreshold"] <- max.score
-
+  
   levelCol <- "Recall"
   i1 <- max((1:length(preRecFun[,1]))[preRecFun[,"Recall"] <= level])
-
+  
   if (!recall.level) {
     i1 <- max((1:length(preRecFun[,1]))[preRecFun[,"Precision"] >= level])
     levelCol <- "Precision"
   }
-
+  
   i0 <- i1 + 1
   x1 <- preRecFun[i1, levelCol]
   x0 <- preRecFun[i0, levelCol]
   y1 <- preRecFun[i1, "ScoreThreshold"]
   y0 <- preRecFun[i0, "ScoreThreshold"]
-
+  
   y <- y0 + (level - x0) * (y1 - y0) / (x1 - x0)
-
+  
   return(y)
 }
 
@@ -3770,13 +3770,13 @@ qpPRscoreThreshold <- function(preRecFun, level, recall.level=TRUE,
 
 qpImportNrr <- function(filename, nTests) {
   nrr <- as.matrix(read.table(filename))
-
+  
   n.var <- max(nrr[,c(1,2)]) + 1
   nrrMatrix <- matrix(as.double(0), nrow=n.var, ncol=n.var)
   nrrMatrix[nrr[,c(1,2)]+1] <- nrr[,3] / nTests
   nrrMatrix <- nrrMatrix + t(nrrMatrix)
   diag(nrrMatrix) <- NA
-
+  
   return(nrrMatrix)
 }
 
@@ -3832,78 +3832,78 @@ setMethod("qpFunctionalCoherence",
 setMethod("qpFunctionalCoherence",
           signature(object="matrix"),
           function(object, TFgenes, geneUniverse=rownames(object), chip, minRMsize=5, removeGOterm="transcription", verbose=FALSE, clusterSize=1) {
-
-  if (!.qpIsPackageLoaded("GOstats"))
-    stop("qpFunctionalCoherence() requires first loading Bioconductor package GOstats")
-
-  if (clusterSize > 1 &&
-      (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
-    stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
-  if (is.null(colnames(object)) || is.null(rownames(object)))
-    stop("the adjacency matrix contained in the 'object' argument should have row and column names corresponding to the gene IDs")
-
-  if (class(object[1,1]) != "logical" && class(object[1,1]) != "numeric" && class(object[1,1]) != "integer")
-    stop("the adjacency matrix should be either logical or binary")
-
-  if (class(object[1,1]) == "numeric" || class(object[1,1]) == "integer")
-    object <- object == 1
-
-  if (length(TFgenes) < 1)
-    stop("TFgenes should contain at least one transcription factor gene\n")
-
-  if (!is.character(TFgenes))
-    stop("gene identifiers in TFgenes should belong to the class character\n")
-
-  if (sum(is.na(match(TFgenes, geneUniverse))) > 0)
-    stop("TFgenes is not a subset from the genes comprising the gene universe\n")
-
-  TFgenes_i <- match(TFgenes, geneUniverse)
-  txRegNet <- lapply(TFgenes_i, function(x) geneUniverse[object[as.integer(x), ]])
-  names(txRegNet) <- TFgenes
-
-  return(.qpFunctionalCoherence(txRegNet, geneUniverse, chip, minRMsize, removeGOterm, verbose, clusterSize))
-})
+            
+            if (!.qpIsPackageLoaded("GOstats"))
+              stop("qpFunctionalCoherence() requires first loading Bioconductor package GOstats")
+            
+            if (clusterSize > 1 &&
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+              stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
+            
+            if (is.null(colnames(object)) || is.null(rownames(object)))
+              stop("the adjacency matrix contained in the 'object' argument should have row and column names corresponding to the gene IDs")
+            
+            if (class(object[1,1]) != "logical" && class(object[1,1]) != "numeric" && class(object[1,1]) != "integer")
+              stop("the adjacency matrix should be either logical or binary")
+            
+            if (class(object[1,1]) == "numeric" || class(object[1,1]) == "integer")
+              object <- object == 1
+            
+            if (length(TFgenes) < 1)
+              stop("TFgenes should contain at least one transcription factor gene\n")
+            
+            if (!is.character(TFgenes))
+              stop("gene identifiers in TFgenes should belong to the class character\n")
+            
+            if (sum(is.na(match(TFgenes, geneUniverse))) > 0)
+              stop("TFgenes is not a subset from the genes comprising the gene universe\n")
+            
+            TFgenes_i <- match(TFgenes, geneUniverse)
+            txRegNet <- lapply(TFgenes_i, function(x) geneUniverse[object[as.integer(x), ]])
+            names(txRegNet) <- TFgenes
+            
+            return(.qpFunctionalCoherence(txRegNet, geneUniverse, chip, minRMsize, removeGOterm, verbose, clusterSize))
+          })
 
 ## the input object is a list of regulatory modules
 setMethod("qpFunctionalCoherence",
           signature(object="list"),
           function(object, geneUniverse=unique(c(names(object), unlist(object, use.names=FALSE))),
                    chip, minRMsize=5, removeGOterm="transcription", verbose=FALSE, clusterSize=1) {
-
-  if (clusterSize > 1 &&
-      (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
-    stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
-
-  TFgenes <- names(object)
-
-  if (length(TFgenes) < 1)
-    stop("names of the entries in the input list should correspond to the transcription factor gene identifiers\n")
-
-  if (sum(is.na(match(TFgenes, geneUniverse))) > 0)
-    stop("TFgenes is not a subset from the genes comprising the gene universe\n")
-
-  return(.qpFunctionalCoherence(object, geneUniverse, chip, minRMsize, removeGOterm, verbose, clusterSize))
-})
+            
+            if (clusterSize > 1 &&
+                (!.qpIsPackageLoaded("rlecuyer") || !.qpIsPackageLoaded("snow")))
+              stop("Using a cluster (clusterSize > 1) requires first loading packages 'snow' and 'rlecuyer'\n")
+            
+            TFgenes <- names(object)
+            
+            if (length(TFgenes) < 1)
+              stop("names of the entries in the input list should correspond to the transcription factor gene identifiers\n")
+            
+            if (sum(is.na(match(TFgenes, geneUniverse))) > 0)
+              stop("TFgenes is not a subset from the genes comprising the gene universe\n")
+            
+            return(.qpFunctionalCoherence(object, geneUniverse, chip, minRMsize, removeGOterm, verbose, clusterSize))
+          })
 
 .qpFunctionalCoherence <- function(txRegNet, geneUniverse, chip, minRMsize, removeGOterm, verbose, clusterSize) {
   TFgenes <- names(txRegNet)
   regModuleSize <- unlist(lapply(txRegNet, length))
-
+  
   hpTest <- get("hyperGTest", mode="function")
   goGraph <- get("GOGraph", mode="function")
   simui <- get("simUI", mode="function")
   sigcat <- get("sigCategories", mode="function")
-
+  
   geneBPuniverse <- .qpFilterByGO(geneUniverse, chip, "BP")
-
+  
   if (sum(regModuleSize >= minRMsize) == 0)
     stop(sprintf("qpFunctionalCoherence: No regulatory module has a minimum size of %d\n", minRMsize))
-
+  
   if (verbose && minRMsize > 1)
     cat(sprintf("qpFunctionalCoherence: calculating GO enrichment in %d regulatory modules\n",
-        length(TFgenes[regModuleSize >= minRMsize])))
-
+                length(TFgenes[regModuleSize >= minRMsize])))
+  
   ## WARNING: THIS IS REALLY NECESSARY ONLY WHEN THE TF HAS GO ANNOTATIONS !!!!
   if (clusterSize > 1) {
     ## copying ShortRead's strategy, 'get()' are to quieten R CMD check, and for no other reason
@@ -3916,10 +3916,10 @@ setMethod("qpFunctionalCoherence",
     clCall <- get("clusterCall", mode="function")
     clOpt <- get("getClusterOption", mode="function")
     clParLapply <- get("parLapply", mode="function")
-
+    
     message("Estimating functional coherence using a ", clOpt("type"),
             " cluster of ", clusterSize, " nodes\n")
-
+    
     cl <- makeCl(clusterSize, type="MPI", snowlib=system.file(package="qpgraph"))
     clSetupRNG(cl)
     res <- clEvalQ(cl, require(qpgraph, quietly=TRUE))
@@ -3938,7 +3938,7 @@ setMethod("qpFunctionalCoherence",
                                 res <- list(TGgenesWithGO=TFgeneTGsWithGO,
                                             goBPcondResult=NULL,
                                             goBPcondResultSigCat=NULL)
-
+                                
                                 if (length(TFgeneTGsWithGO) >= minRMsize && minRMsize > 1) {
                                   goHypGparams <- new("GOHyperGParams",
                                                       geneIds=TFgeneTGsWithGO,
@@ -3952,7 +3952,7 @@ setMethod("qpFunctionalCoherence",
                                               goBPcondResultSigCat=sigcat(goHypGcond))
                                 }
                                 res
-                             }, geneBPuniverse, chip)
+                              }, geneBPuniverse, chip)
     txRegNetGO <- txRegNetGO[which(sapply(txRegNetGO, length) > 0)]
     stopCl(cl)
   } else {
@@ -3962,11 +3962,11 @@ setMethod("qpFunctionalCoherence",
         cat(".")
       TFgeneTGs <- txRegNet[[TFgene]]
       TFgeneTGsWithGO <- .qpFilterByGO(TFgeneTGs, chip, "BP")
-
+      
       txRegNetGO[[TFgene]] <- list(TGgenesWithGO=TFgeneTGsWithGO,
                                    goBPcondResult=NULL,
                                    goBPcondResultSigCat=NULL)
-
+      
       if (length(TFgeneTGsWithGO) >= minRMsize && minRMsize > 1) {
         goHypGparams <- new("GOHyperGParams",
                             geneIds=TFgeneTGsWithGO,
@@ -3980,26 +3980,26 @@ setMethod("qpFunctionalCoherence",
       }
     }
   }
-
+  
   if (verbose)
     cat(sprintf("\nqpFunctionalCoherence: calculating functional coherence in %d regulatory modules\n",
-        length(names(txRegNetGO))))
-
+                length(names(txRegNetGO))))
+  
   TFgenesWithGO <- .qpFilterByGO(TFgenes, chip, "BP")
   TFgenesWithGO <- AnnotationDbi::mget(TFgenesWithGO, get(gsub(".db","GO",chip)))
   TFgenesWithGO <- lapply(TFgenesWithGO,
                           function(x) if (is.list(x)) {
-                                        z <- sapply(x, function(x) x$Ontology);
-                                        z[unique(names(z))]
-                                      })
+                            z <- sapply(x, function(x) x$Ontology);
+                            z[unique(names(z))]
+                          })
   TFgenesWithGOBP <- lapply(TFgenesWithGO,
                             function(x) if (sum(x=="BP",na.rm=TRUE) > 0) {
-                                          names(x[x=="BP" & !is.na(x)])
-                                        } else { NULL })
-
+                              names(x[x=="BP" & !is.na(x)])
+                            } else { NULL })
+  
   goTermsEnv <- GOenv("TERM")
   goBPparentsEnv <- GOenv("BPPARENTS")
-
+  
   TFgoTerms <- NULL
   if (!is.null(removeGOterm)) {
     ## remove from the GO annotation of the transcription factor and the target gene,
@@ -4007,15 +4007,15 @@ setMethod("qpFunctionalCoherence",
     ## 'removeGOTerm'. By default this is the word 'transcription', i.e., try to
     ## remove GO terms associated to transcriptional regulation from the transcription
     ## factor GO annotation
-
+    
     goTerms <- unlist(AnnotationDbi::eapply(goTermsEnv, function(x) x@Term))
     goTermOntologies <- unlist(AnnotationDbi::eapply(goTermsEnv, function(x) x@Ontology))
     goTermBPOntology <- names(goTermOntologies[goTermOntologies == "BP"])
-
+    
     TFgoTerms <- names(goTerms[grep(removeGOterm, goTerms)])
     TFgoTerms <- TFgoTerms[!is.na(match(TFgoTerms, goTermBPOntology))]
   }
-
+  
   GOgraphSim <- rep(NA, length(names(txRegNetGO)))
   names(GOgraphSim) <- names(txRegNetGO)
   for (TFgene in names(txRegNetGO)) {
@@ -4029,20 +4029,20 @@ setMethod("qpFunctionalCoherence",
       mt <- match(TFgoAnnot, TFgoTerms)
       if (sum(!is.na(mt)) > 0)
         TFgoAnnot <- TFgoAnnot[is.na(mt)]
-
+      
       # if the transcription factor has no GO BP annotations beyond
       # transcriptional regulation then the functional coherence value is NA
       if (length(TFgoAnnot) > 0) {
         txRegNetGO[[TFgene]][["TFgeneGOannot"]] <- TFgoAnnot
-
+        
         # if the transcription factor has GO BP annotations beyond transcription
         # but the target gene set has no over-represented GO terms then the
         # functional coherence is 0
         if (length(txRegNetGO[[TFgene]]$goBPcondResultSigCat) == 0 && length(txRegNetGO[[TFgene]]$TGgenesWithGO) > 1)
           sUI <- 0
         else { # otherwise the functional coherence is estimated as the similarity
-               # between the GO graphs associated to the transcription factor GO
-               # annotations and the GO over-represented terms in the target gene set
+          # between the GO graphs associated to the transcription factor GO
+          # annotations and the GO over-represented terms in the target gene set
           if (length(txRegNetGO[[TFgene]]$TGgenesWithGO) > 0) {
             gTF <- goGraph(TFgoAnnot, goBPparentsEnv)
             gTF <- removeNode("all", gTF)
@@ -4054,14 +4054,14 @@ setMethod("qpFunctionalCoherence",
               if (length(.qpFilterByGO(TGgene, chip, "BP")) > 0) {
                 TGgeneWithGO <- AnnotationDbi::mget(TGgene, get(gsub(".db","GO",chip)))
                 TGgeneWithGO <- lapply(TGgeneWithGO,
-                                        function(x) if (is.list(x)) {
-                                                      z <- sapply(x, function(x) x$Ontology);
-                                                      z[unique(names(z))]
-                                                    })
+                                       function(x) if (is.list(x)) {
+                                         z <- sapply(x, function(x) x$Ontology);
+                                         z[unique(names(z))]
+                                       })
                 TGgeneWithGOBP <- lapply(TGgeneWithGO,
-                                function(x) if (sum(x=="BP",na.rm=TRUE) > 0) {
-                                              names(x[x=="BP" & !is.na(x)])
-                                            } else { NULL })
+                                         function(x) if (sum(x=="BP",na.rm=TRUE) > 0) {
+                                           names(x[x=="BP" & !is.na(x)])
+                                         } else { NULL })
                 TGgoAnnot <- TGgeneWithGOBP[[TGgene]]
                 if (length(TGgoAnnot) > 0) {
                   mt <- match(TGgoAnnot, TFgoTerms)
@@ -4077,7 +4077,7 @@ setMethod("qpFunctionalCoherence",
               }
             }
             gTG <- removeNode("all", gTG)
-
+            
             sUI <- simui(gTF, gTG)
           }
         }
@@ -4087,7 +4087,7 @@ setMethod("qpFunctionalCoherence",
   }
   if (verbose)
     cat("\n")
-
+  
   return(list(txRegNet=txRegNet,
               txRegNetGO=txRegNetGO,
               functionalCoherenceValues=GOgraphSim))
@@ -4119,51 +4119,51 @@ qpTopPairs <- function(measurementsMatrix=NULL, refGraph=NULL, n=6L, file=NULL,
                        decreasing=FALSE, pairup.i=NULL, pairup.j=NULL,
                        annotation=NULL, fcOutput=NULL, fcOutput.na.rm=FALSE,
                        digits=NULL) {
-
+  
   haveMeasurements <- FALSE
-
+  
   if (is.null(measurementsMatrix) && is.null(refGraph))
     stop("A proper value for either 'measurementsMatrix' or 'refGraph' should be provided\n")
-
+  
   if (is.null(measurementsMatrix)) {
     if (class(refGraph) != "matrix" && class(refGraph) != "graphNEL" &&
         class(refGraph) != "graphAM" && class(refGraph) != "graphBAM" &&
         length(grep("Matrix", class(refGraph))) == 0)
       stop("refGraph should be provided either as an adjacency matrix, a graphNEL object, a graphAM object or a graphBAM object\n")
-
+    
     refGraph <- as(refGraph, "matrix")
-
+    
     p <- (d <- dim(refGraph))[1]
     if (p != d[2])
       stop("'measurementsMatrix' should be a squared matrix\n")
-
+    
     if (is.null(rownames(refGraph)) || is.null(colnames(refGraph)))
       stop("'refGraph' should have row and column names\n")
     else {
       if (!identical(rownames(refGraph), colnames(refGraph)))
         stop("Row and column names of 'refGraph' should be the same\n")
     }
-
+    
     measurementsMatrix <- matrix(0, nrow=nrow(refGraph), ncol=ncol(refGraph), dimnames=dimnames(refGraph))
   } else {
     if (class(measurementsMatrix) != "matrix" && class(measurementsMatrix) != "dspMatrix" &&
         class(measurementsMatrix) != "dgeMatrix")
       stop("'measurementsMatrix' should be a numerical matrix\n")
-
+    
     p <- (d <- dim(measurementsMatrix))[1]
     if (p != d[2])
       stop("'measurementsMatrix' should be a squared matrix\n")
-
+    
     if (is.null(rownames(measurementsMatrix)) || is.null(colnames(measurementsMatrix)))
       stop("'measurementsmatrix' should have row and column names\n")
     else {
       if (!identical(rownames(measurementsMatrix), colnames(measurementsMatrix)))
         stop("Row and column names of 'measurementsMatrix' should be the same\n")
     }
-
+    
     haveMeasurements <- TRUE
   }
-
+  
   if (is.null(refGraph)) {
     refGraph <- matrix(TRUE, nrow=nrow(measurementsMatrix),
                        ncol=ncol(measurementsMatrix),
@@ -4173,16 +4173,16 @@ qpTopPairs <- function(measurementsMatrix=NULL, refGraph=NULL, n=6L, file=NULL,
         class(refGraph) != "graphAM" && class(refGraph) != "graphBAM" &&
         length(grep("Matrix", class(refGraph))) == 0)
       stop("'refGraph' should be provided either as an adjacency matrix, a graphNEL object, a graphAM object or a graphBAM object\n")
-
+    
     if (class(refGraph) == "graphNEL" || class(refGraph) == "graphAM" || class(refGraph) == "graphBAM")
       refGraph <- graph::ugraph(refGraph)
-
+    
     refGraph <- as(refGraph, "matrix")
-
+    
     p <- (d <- dim(refGraph))[1]
     if (p != d[2])
       stop("'refGraph' should be a squared matrix\n")
-
+    
     if (is.null(rownames(refGraph)) || is.null(colnames(refGraph)))
       stop("'refGraph' should have row and column names\n")
     else {
@@ -4190,42 +4190,42 @@ qpTopPairs <- function(measurementsMatrix=NULL, refGraph=NULL, n=6L, file=NULL,
         stop("Row and column names of 'refGraph' should be the same\n")
     }
   }
-
+  
   if (!identical(rownames(measurementsMatrix), rownames(refGraph)))
     stop("Row and column names in 'measurementsMatrix' and 'refGraph' should be the same\n")
-
+  
   if (fcOutput.na.rm && is.null(fcOutput))
     stop("When 'fcOutput.na.rm=TRUE then 'fcOutput' should be set.\n")
-
+  
   var.names <- rownames(measurementsMatrix)
   n.var <- nrow(measurementsMatrix)
-
+  
   ## by now we have to coerce it to a regular matrix
   ## but hopefully in the near future we can do [<- as well on a dspMatrix
   measurementsMatrix <- as.matrix(measurementsMatrix)
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("'pairup.i' and 'pairup.j' should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (!is.null(pairup.i) && !is.null(pairup.j))  {
     if (any(is.na(match(c(pairup.i, pairup.j), var.names))))
       warning("Some of the variables in 'pairup.i' or 'pairup.j' do not form part of 'measurementsMatrix' or 'refGraph'\n")
-
+    
     pairup.i <- match(pairup.i, var.names)
     pairup.i <- pairup.i[!is.na(pairup.i)]
-
+    
     pairup.j <- match(pairup.j, var.names)
     pairup.j <- pairup.j[!is.na(pairup.j)]
-
+    
     pairup.ij.int <- intersect(pairup.i, pairup.j)
     pairup.i.noint <- setdiff(pairup.i, pairup.ij.int)
     pairup.j.noint <- setdiff(pairup.j, pairup.ij.int)
-
+    
     nomeasurementsMask <- matrix(FALSE, nrow=n.var, ncol=n.var)
     nomeasurementsMask[as.matrix(
-                       expand.grid(pairup.ij.int,
-                                   c(pairup.i.noint, pairup.j.noint)))] <- TRUE
+      expand.grid(pairup.ij.int,
+                  c(pairup.i.noint, pairup.j.noint)))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.i.noint, pairup.j.noint))] <- TRUE
     nomeasurementsMask[as.matrix(expand.grid(pairup.ij.int, pairup.ij.int))] <- TRUE
     diag(nomeasurementsMask) <- FALSE
@@ -4233,38 +4233,38 @@ qpTopPairs <- function(measurementsMatrix=NULL, refGraph=NULL, n=6L, file=NULL,
     nomeasurementsMask <- !nomeasurementsMask
     measurementsMatrix[nomeasurementsMask] <- NA
   }
-
+  
   upperTriRow <- row(measurementsMatrix)[upper.tri(measurementsMatrix) &
-                                         !is.na(measurementsMatrix) & refGraph]
+                                           !is.na(measurementsMatrix) & refGraph]
   upperTriCol <- col(measurementsMatrix)[upper.tri(measurementsMatrix) &
-                                         !is.na(measurementsMatrix) & refGraph]
+                                           !is.na(measurementsMatrix) & refGraph]
   measurementsUpperTriMatrix <- measurementsMatrix[upper.tri(measurementsMatrix) &
-                                                   !is.na(measurementsMatrix) & refGraph]
+                                                     !is.na(measurementsMatrix) & refGraph]
   orderedMeasurements <- sort(measurementsUpperTriMatrix,index.return=TRUE,
                               decreasing=decreasing)
-
+  
   if (!fcOutput.na.rm) {
     if (n == Inf)
       n <- length(measurementsUpperTriMatrix)
-
+    
     edgeRnk <- data.frame(i=var.names[upperTriRow[orderedMeasurements$ix[1:n]]],
                           j=var.names[upperTriCol[orderedMeasurements$ix[1:n]]],
                           x=orderedMeasurements$x[1:n], stringsAsFactors=FALSE)
   } else {
     n2 <- length(measurementsUpperTriMatrix)
-
+    
     edgeRnk <- data.frame(i=var.names[upperTriRow[orderedMeasurements$ix[1:n2]]],
                           j=var.names[upperTriCol[orderedMeasurements$ix[1:n2]]],
                           x=orderedMeasurements$x[1:n2], stringsAsFactors=FALSE)
   }
-
+  
   if (!is.null(pairup.i)) {
     swapMask <- is.na(match(edgeRnk$i, var.names[pairup.i]))
     subRnk <- edgeRnk[swapMask, ]
     subRnk <- data.frame(subRnk$j, subRnk$i, subRnk$x, stringsAsFactors=FALSE)
     edgeRnk[swapMask, ] <- subRnk
   }
-
+  
   if (!is.null(annotation)) {
     haveSYMBOL <- !is.na(match(paste0(gsub(".db", "", annotation), "SYMBOL"),
                                ls(sprintf("package:%s", annotation))))
@@ -4272,39 +4272,39 @@ qpTopPairs <- function(measurementsMatrix=NULL, refGraph=NULL, n=6L, file=NULL,
                               ls(sprintf("package:%s", annotation))))
     if (!haveSYMBOL && !haveGNAME)
       stop("No SYMBOL nor GENENAME mappings for the annotation package %s\n", annotation)
-
+    
     syms <- NA
     if (haveSYMBOL)
       syms <- unlist(AnnotationDbi::mget(unique(c(edgeRnk$i, edgeRnk$j)),
-                       annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db"),
-                       ifnotfound=NA))
+                                         annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db"),
+                                         ifnotfound=NA))
     else
       syms <- unlist(AnnotationDbi::mget(unique(c(edgeRnk$i, edgeRnk$j)),
-                       annotate::getAnnMap(map="GENENAME", chip=annotation, type="db"),
-                       ifnotfound=NA))
+                                         annotate::getAnnMap(map="GENENAME", chip=annotation, type="db"),
+                                         ifnotfound=NA))
     edgeRnk$iSymbol=as.character(as.vector(syms[edgeRnk$i]))
     edgeRnk$jSymbol=as.character(as.vector(syms[edgeRnk$j]))
     edgeRnk <- edgeRnk[, c(1,2,4,5,3)]
     edgeRnk$iSymbol[is.na(edgeRnk$iSymbol)] <- as.vector(edgeRnk$i[is.na(edgeRnk$iSymbol)])
     edgeRnk$jSymbol[is.na(edgeRnk$jSymbol)] <- as.vector(edgeRnk$j[is.na(edgeRnk$jSymbol)])
   }
-
+  
   if (!is.null(digits))
     edgeRnk$x <- round(edgeRnk$x, digits=digits)
-
+  
   if (!haveMeasurements)
     edgeRnk <- edgeRnk[, -dim(edgeRnk)[2]]
-
+  
   if (!is.null(fcOutput)) {
     if (class(fcOutput) != "list")
       stop("'fcOutput' should be the output of 'qpFunctionalCoherence'.\n")
-
+    
     if (!all(names(fcOutput) == c("txRegNet", "txRegNetGO", "functionalCoherenceValues")))
       stop("'fcOutput' should be the output of 'qpFunctionalCoherence'.\n")
-
+    
     if (is.null(pairup.i) || length(pairup.i) == 0)
       stop("When 'fcOutput' is set 'pairup.i' and 'pairup.j' should be also set.\n")
-
+    
     edgeRnk <- cbind(edgeRnk, funCoherence=NA_real_)
     fcMask <- !is.na(match(edgeRnk$i, names(fcOutput$functionalCoherenceValues)))
     if (any(fcMask)) {
@@ -4312,30 +4312,30 @@ qpTopPairs <- function(measurementsMatrix=NULL, refGraph=NULL, n=6L, file=NULL,
                               fcOutput$txRegNet)
       edgeRnk$funCoherence[fcMask] <- fcOutput$functionalCoherenceValues[edgeRnk$i[fcMask]]
     }
-
+    
     if (!is.null(digits))
       edgeRnk$funCoherence <- round(edgeRnk$funCoherence, digits=digits)
-
+    
     if (fcOutput.na.rm) {
       if (!any(!is.na(edgeRnk$funCoherence)))
         stop("No functional coherence value is different from NA. Please set 'fcOutput.na.rm=FALSE'\n")
-
+      
       edgeRnk <- edgeRnk[!is.na(edgeRnk$funCoherence), ]
-
+      
       if (n == Inf)
         n <- length(measurementsUpperTriMatrix)
-
+      
       edgeRnk <- edgeRnk[1:n, ]
     }
   }
-
+  
   rownames(edgeRnk) <- 1:dim(edgeRnk)[1]
-
+  
   if (is.null(file))
     return(edgeRnk)
   else
     write.table(edgeRnk, file=file, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
-
+  
   invisible(edgeRnk)
 }
 
@@ -4360,24 +4360,24 @@ qpPlotNetwork <- function(g, vertexSubset=graph::nodes(g), boundary=FALSE,
                           minimumSizeConnComp=2, pairup.i=NULL, pairup.j=NULL,
                           highlight=NULL, annotation=NULL, layout=c("twopi", "dot", "neato", "circo", "fdp")) {
   ## require(graph)
-
+  
   layout <- match.arg(layout)
-
+  
   if (any(is.na(match(graph::nodes(g), vertexSubset)))) {
     vertexSubsetNoMatch <- vertexSubset[is.na(match(vertexSubset, graph::nodes(g)))]
     if (length(vertexSubsetNoMatch) > 0 && is.null(annotation))
       stop("Vertex names in 'vertexSubset' ", vertexSubsetNoMatch, " do not form part of the vertices in 'g' and 'annotation' is set to NULL.\n")
-
+    
     if (length(vertexSubsetNoMatch) > 0 && !is.null(annotation)) {
       vertexSubsetNoMatchIDs <- unlist(AnnotationDbi::mget(vertexSubsetNoMatch,
-                                         AnnotationDbi::revmap(annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db")),
-                                         ifnotfound=NA))
+                                                           AnnotationDbi::revmap(annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db")),
+                                                           ifnotfound=NA))
       if (any(is.na(vertexSubsetNoMatchIDs)))
         stop("Vertex names in 'vertexSubset' ", vertexSubsetNoMatch[is.na(vertexSubsetNoMatchIDs)], " do not form part of the vertices in 'g' and identifiers could not be found through the SYMBOL map from 'annotation'.\n")
-
+      
       vertexSubset <- c(setdiff(vertexSubset, vertexSubsetNoMatch), vertexSubsetNoMatchIDs)
     }
-
+    
     if (boundary) {
       bd <- boundary(vertexSubset, g)
       bd <- bd[sapply(bd, length) > 0]
@@ -4387,35 +4387,35 @@ qpPlotNetwork <- function(g, vertexSubset=graph::nodes(g), boundary=FALSE,
     if (numEdges(g) == 0)
       stop("The resulting graph has no edges\n")
   }
-
+  
   if (minimumSizeConnComp > 1) {
     gCc <- connComp(g)
     gCcOfMinSize <- gCc[sapply(gCc, length) >= minimumSizeConnComp]
     vertexSubset <- unique(unlist(gCcOfMinSize))
-
+    
     if (any(is.na(match(graph::nodes(g), vertexSubset)))) {
       g <- subGraph(vertexSubset, g)
       if (numEdges(g) == 0)
         stop("The resulting graph has no edges\n")
     }
   }
-
+  
   if ((!is.null(pairup.i) && is.null(pairup.j)) ||
       (is.null(pairup.i) && !is.null(pairup.j)))
     stop("'pairup.i' and 'pairup.j' should both either be set to NULL or contain subsets of variables\n")
-
+  
   if (!is.null(pairup.i) && !is.null(pairup.j))  {
     if (sum(is.na(match(graph::nodes(g), c(pairup.i, pairup.j)))) > 0)
       warning("Some of the vertices in the resulting graph do not form part of 'pairup.i' nor 'pairup.j'\n")
-
+    
     edL <- matrix(unlist(sapply(graph::nodes(g),
                                 function(x) t(cbind(x, graph::edges(g)[[x]])), USE.NAMES=FALSE)),
-                   ncol=2, byrow=TRUE)
+                  ncol=2, byrow=TRUE)
     edL <- unique(t(apply(edL, 1, sort)))
     mask <- apply(edL, 1, function(x) sum(!is.na(match(x, pairup.i)))*sum(!is.na(match(x, pairup.j)))) == 0
     if (sum(mask) > 0)
       g <- removeEdge(from=edL[mask, 1], to=edL[mask, 2], g)
-
+    
     edgemode(g) <- "directed"
     g.iNodes <- graph::nodes(g)[!is.na(match(graph::nodes(g), pairup.i))]
     wrongEdges <- boundary(setdiff(graph::nodes(g), g.iNodes), g)
@@ -4423,7 +4423,7 @@ qpPlotNetwork <- function(g, vertexSubset=graph::nodes(g), boundary=FALSE,
     wrongEdges <- matrix(unlist(sapply(names(wrongEdges), function(x) t(cbind(x, wrongEdges[[x]])), USE.NAMES=FALSE)),
                          ncol=2, byrow=TRUE)
     g <- removeEdge(from=wrongEdges[, 1], to=wrongEdges[, 2], g)
-
+    
     nodeLabels <- graph::nodes(g)
     if (!is.null(annotation)) {
       haveSYMBOL <- !is.na(match(paste0(gsub(".db", "", annotation), "SYMBOL"),
@@ -4432,24 +4432,24 @@ qpPlotNetwork <- function(g, vertexSubset=graph::nodes(g), boundary=FALSE,
                                 ls(sprintf("package:%s", annotation))))
       if (!haveSYMBOL && !haveGNAME)
         stop("No SYMBOL nor GENENAME mappings for the annotation package %s\n", annotation)
-
+      
       if (haveSYMBOL)
         nodeLabels <- unlist(AnnotationDbi::mget(graph::nodes(g),
-                               annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db"),
-                               ifnotfound=NA))
+                                                 annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db"),
+                                                 ifnotfound=NA))
       else
         nodeLabels <- unlist(AnnotationDbi::mget(graph::nodes(g),
-                               annotate::getAnnMap(map="GENENAME", chip=annotation, type="db"),
-                               ifnotfound=NA))
+                                                 annotate::getAnnMap(map="GENENAME", chip=annotation, type="db"),
+                                                 ifnotfound=NA))
       nodeLabels[is.na(nodeLabels)] <- graph::nodes(g)[is.na(nodeLabels)]
     }
-
+    
     pkg <- "Rgraphviz"
     if (!library(pkg, logical.return=TRUE, character.only=TRUE)) {
       warning("qpPlotNetwork() requires package 'Rgraphviz' to plot the network and does not seem to be installed\n")
       return(invisible(g))
     }
-
+    
     mkNodeAttrs <- get("makeNodeAttrs", mode="function")
     nodattr <- mkNodeAttrs(g, label=nodeLabels, shape="ellipse", fixedsize=FALSE,
                            fillcolor=grey(0.9), fontcolor="black")
@@ -4463,36 +4463,36 @@ qpPlotNetwork <- function(g, vertexSubset=graph::nodes(g), boundary=FALSE,
                                 ls(sprintf("package:%s", annotation))))
       if (!haveSYMBOL && !haveGNAME)
         stop("No SYMBOL nor GENENAME mappings for the annotation package %s\n", annotation)
-
+      
       if (haveSYMBOL)
         nodeLabels <- unlist(AnnotationDbi::mget(graph::nodes(g),
-                               annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db"),
-                               ifnotfound=NA))
+                                                 annotate::getAnnMap(map="SYMBOL", chip=annotation, type="db"),
+                                                 ifnotfound=NA))
       else
         nodeLabels <- unlist(AnnotationDbi::mget(graph::nodes(g),
-                               annotate::getAnnMap(map="GENENAME", chip=annotation, type="db"),
-                               ifnotfound=NA))
+                                                 annotate::getAnnMap(map="GENENAME", chip=annotation, type="db"),
+                                                 ifnotfound=NA))
       nodeLabels[is.na(nodeLabels)] <- graph::nodes(g)[is.na(nodeLabels)]
     }
-
+    
     pkg <- "Rgraphviz"
     if (!library(pkg, logical.return=TRUE, character.only=TRUE)) {
       warning("qpPlotNetwork() requires package 'Rgraphviz' to plot the network and does not seem to be installed\n")
       return(invisible(g))
     }
-
+    
     mkNodeAttrs <- get("makeNodeAttrs", mode="function")
     nodattr <- mkNodeAttrs(g, label=nodeLabels, shape="ellipse", fixedsize=FALSE,
                            fillcolor=grey(0.9), fontcolor="black")
   }
-
+  
   if (!is.null(highlight)) {
     g.hNodes <- graph::nodes(g)[!is.na(match(graph::nodes(g), highlight))]
     nodattr$fontcolor[g.hNodes] <- "red"
   }
-
+  
   plot(g, layout, nodeAttrs=nodattr, lwd=2)
-
+  
   invisible(g)
 }
 
@@ -4515,24 +4515,24 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
                       p.value=0.05, adjust.method="holm",
                       xlab="Ordered Markers", ylab="Ordered Genes",
                       main="", ...) {
-
+  
   ## get all variables
   var.names <- rownames(p.valueMatrix)
-
+  
   ## get positions ordered by chr
   markerPos <- markerPos[order(markerPos[, 1], markerPos[,2]), ]
   genePos <- genePos[order(genePos[, 1], genePos[,2]), ]
-
+  
   ## re-scale genes and marker positions between 0 and 1
   chrRelLen <- chrLen/sum(chrLen)
   chrRelCumLen <- c(0, cumsum(chrRelLen)[-length(chrRelLen)])
   geneRelPos <- chrRelCumLen[genePos[ ,1]] +
-                chrRelLen[genePos[ ,1]]*(genePos[ ,2]/chrLen[genePos[ ,1]]) 
+    chrRelLen[genePos[ ,1]]*(genePos[ ,2]/chrLen[genePos[ ,1]]) 
   names(geneRelPos) <- rownames(genePos)
   markerRelPos <- chrRelCumLen[markerPos[ ,1]] +
-                  chrRelLen[markerPos[ ,1]]*(markerPos[ ,2]/chrLen[markerPos[ ,1]])
+    chrRelLen[markerPos[ ,1]]*(markerPos[ ,2]/chrLen[markerPos[ ,1]])
   names(markerRelPos) <- rownames(markerPos)
-
+  
   ## build map matrix
   tp <- qpTopPairs(p.valueMatrix,
                    pairup.i=intersect(names(markerRelPos), var.names),
@@ -4541,25 +4541,25 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
   tp <- tp[tp$padj < p.value, ]
   if (nrow(tp) == 0)
     stop(sprintf("No association meets the p.value cutoff at %.2f. Increase the p.value or change the p-value adjusting method\n", p.value))
-
+  
   tp <- tp[(tp$i %in% names(markerRelPos)) & (tp$j %in% names(geneRelPos)), ]
   colnames(tp) <- c("i", "j", "pval", "adjpval")
-
+  
   ## jitter a bit equal positions
   lastIdx <- length(markerRelPos)
   while(sum(markerRelPos - c(0, markerRelPos[-lastIdx]) == 0) > 0) {
     wh.equal <- which(markerRelPos - c(0, markerRelPos[-lastIdx]) == 0)
     markerRelPos[wh.equal] <- markerRelPos[wh.equal] +
-                            (markerRelPos[wh.equal + 1] - markerRelPos[wh.equal]) / 2
+      (markerRelPos[wh.equal + 1] - markerRelPos[wh.equal]) / 2
   }
-
+  
   lastIdx <- length(geneRelPos)
   while(sum(geneRelPos - c(0, geneRelPos[-lastIdx]) == 0) > 0) {
     wh.equal <- which(geneRelPos - c(0, geneRelPos[-lastIdx]) == 0)
     geneRelPos[wh.equal] <- geneRelPos[wh.equal] +
-                            (geneRelPos[wh.equal + 1] - geneRelPos[wh.equal]) / 2
+      (geneRelPos[wh.equal + 1] - geneRelPos[wh.equal]) / 2
   }
-
+  
   ## plot the map
   x <- markerRelPos[tp[, 1]]
   y <- geneRelPos[tp[, 2]]
@@ -4571,7 +4571,7 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
        labels=names(chrLen), tick=FALSE, cex.axis=0.9)
   axis(2, at=(chrRelCumLen + c(chrRelCumLen[-1], 1))/2,
        labels=names(chrLen), tick=FALSE, cex.axis=0.9, las=1)
-
+  
   invisible(tp)
 }
 
@@ -4595,43 +4595,43 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
 ##         with the standard errors of the edges
 
 .qpEdgePACSE <- function(S, A, R.code.only=FALSE) {
-
+  
   if (!R.code.only) {
     ## this should change so that the entire algorithm deals with *Matrix classes from the Matrix package
     return(.qpFastPACSE(as(S, "matrix"), as(A, "matrix")));
   }
-
+  
   A <- as(A, "matrix") ## idem
-
+  
   n.var <- nrow(A)
-
+  
   A <- A + diag(n.var) ## in the code below we need 1s in the main diagonal and
-                       ## then at the same time we make sure we get a 0-1 matrix
-                       ## as a truth value + 0 or 1 equals a number
-
+  ## then at the same time we make sure we get a 0-1 matrix
+  ## as a truth value + 0 or 1 equals a number
+  
   A[col(A) > row(A)] <- NA
-
+  
   # selection row and column indices corr. to the non-zero elem.
   A[A == 0] <- NA
   r.nz <- c(row(A))[!is.na(A)]
   c.nz <- c(col(A))[!is.na(A)]
-
+  
   # computation of the Fisher information matrix
   Iss <- S[c.nz,c.nz] * S[r.nz,r.nz] +
-         S[c.nz,r.nz] * S[r.nz,c.nz]
+    S[c.nz,r.nz] * S[r.nz,c.nz]
   Iss <- solve(Iss)
   IssI <- matrix(rep(0, length(r.nz) * length(c.nz)), nrow=length(r.nz))
   diag(IssI) <- 1
   IssI[cbind((1:length(r.nz))[r.nz==c.nz], (1:length(r.nz))[r.nz==c.nz])] <- 2
-
+  
   FISHER <- IssI %*% Iss %*% IssI
-
+  
   # standard errors are in the diagonal of the Fisher information matrix
   FSHR <- diag(FISHER)
   SE <- matrix(NA, nrow(A), nrow(A))
   SE[cbind(r.nz,c.nz)] <- SE[cbind(c.nz,r.nz)] <- FSHR
   diag(SE) <- NA
-
+  
   return(SE)
 }
 
@@ -4649,16 +4649,16 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
 .qpIPFpass <- function(Vf, Vn, clqlst) {
   n.var <- nrow(Vf)
   firstclq <- 1
-
+  
   if (clqlst[[1]][1] > n.var) { # if the clique list has vertex-clique indices
     firstclq <- n.var + 1       # at the beginning
   }
-
+  
   V <- Vn
   for(i in firstclq:length(clqlst)) {
     V <- .qpIPFstep(Vf, V, i, clqlst)
   }
-
+  
   return(V)
 }
 
@@ -4685,7 +4685,7 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
   V[b, a] <- Bnba %*% Vfaa
   V[a, b] <- t(V[b, a])
   V[b, b] <- Vnbba + Bnba %*% Vfaa %*% t(Bnba)
-
+  
   return(V)
 }
 
@@ -4702,10 +4702,10 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
 
 .qpFilterByGO <- function(entrezGeneIds, chip, ontologyType=c("BP", "MF", "CC")) {
   ontologyType <- match.arg(ontologyType)
-
+  
   if (length(entrezGeneIds) == 0)
     stop(".qpFilterByGO: no input Entrez gene identifiers\n")
-
+  
   haveGo <- sapply(AnnotationDbi::mget(entrezGeneIds,
                                        annotate::getAnnMap(map="GO", chip=chip, type="db"),
                                        ifnotfound=NA),
@@ -4717,9 +4717,9 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
                        ontologyType %in% onts
                      }
                    })
-
+  
   filteredIds <- names(haveGo)[haveGo]
-
+  
   return(filteredIds)
 }
 
@@ -4736,8 +4736,8 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
 .qpIsPackageLoaded <- function(name) {
   ## Purpose: is package 'name' loaded?
   ## --------------------------------------------------
- (paste("package:", name, sep="") %in% search()) ||
- (name %in% loadedNamespaces())
+  (paste("package:", name, sep="") %in% search()) ||
+    (name %in% loadedNamespaces())
 }    
 
 
@@ -4750,7 +4750,7 @@ qpPlotMap <- function(p.valueMatrix, markerPos, genePos, chrLen,
 .qpIsPackageInstalled <- function(name) {
   ## Purpose: is package 'name' installed?
   ## --------------------------------------------------
- (name %in% rownames(installed.packages()))
+  (name %in% rownames(installed.packages()))
 }
 
 
@@ -4770,16 +4770,16 @@ clPrCall <- function(cl, fun, n.adj, ...) {
   ## sndCall <- get("sendCall", mode="function")
   ## rcv1Result <- get("recvOneResult", mode="function")
   ## check4RmtErrors <- get("checkForRemoteErrors", mode="function")
-
+  
   snow::checkCluster(cl)
   for (i in seq(along = cl))
     snow::sendCall(cl[[i]], fun, list(...))
-
+  
   i <- rep(0, length(cl))
   k <- 0
   ppct <- -1
   pb <- txtProgressBar(style=3)
-
+  
   r <- vector(mode="list", length=length(cl))
   foundError <- FALSE
   nodesDone <- 0
@@ -4807,9 +4807,9 @@ clPrCall <- function(cl, fun, n.adj, ...) {
       nodesDone <- nodesDone + 1
     }
   }
-
+  
   close(pb)
-
+  
   r
 }
 
@@ -4820,34 +4820,34 @@ clPrCall <- function(cl, fun, n.adj, ...) {
 .qpFastNrr <- function(X, I, Y, q, restrict.Q, fix.Q, nTests, alpha,
                        pairup.i.noint, pairup.j.noint, pairup.ij.int,
                        exact.test, verbose, startTime, nAdj2estimateTime) {
-
+  
   ## nLevels <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
   nLevels <- rep(NA_integer_, times=ncol(X))
   nLevels[I] <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
   if (any(nLevels[I] == 1))
     stop(sprintf("Discrete variable %s has only one level", colnames(X)[I[nLevels[I]==1]]))
-
+  
   return(.Call("qp_fast_nrr", X, as.integer(I), as.integer(nLevels),
-                              as.integer(Y), as.integer(q), restrict.Q, ## restrict.Q can be a matrix
-                              as.integer(fix.Q), as.integer(nTests), as.double(alpha),
-                              as.integer(pairup.i.noint), as.integer(pairup.j.noint),
-                              as.integer(pairup.ij.int), as.integer(exact.test),
-                              as.integer(verbose), as.double(startTime),
-                              as.integer(nAdj2estimateTime), .GlobalEnv))
+               as.integer(Y), as.integer(q), restrict.Q, ## restrict.Q can be a matrix
+               as.integer(fix.Q), as.integer(nTests), as.double(alpha),
+               as.integer(pairup.i.noint), as.integer(pairup.j.noint),
+               as.integer(pairup.ij.int), as.integer(exact.test),
+               as.integer(verbose), as.double(startTime),
+               as.integer(nAdj2estimateTime), .GlobalEnv))
 }
 
 .qpFastNrrIdenticalQs <- function(X, q, restrict.Q, fix.Q, nTests, alpha,
                                   pairup.i.noint, pairup.j.noint, pairup.ij.int,
                                   verbose, startTime, nAdj2estimateTime) {
-
+  
   return(.Call("qp_fast_nrr_identicalQs", X, as.integer(q), as.integer(restrict.Q),
-                                          as.integer(fix.Q),
-                                          as.integer(nTests), as.double(alpha),
-                                          as.integer(pairup.i.noint),
-                                          as.integer(pairup.j.noint),
-                                          as.integer(pairup.ij.int),
-                                          as.integer(verbose), as.double(startTime),
-                                          as.integer(nAdj2estimateTime), .GlobalEnv))
+               as.integer(fix.Q),
+               as.integer(nTests), as.double(alpha),
+               as.integer(pairup.i.noint),
+               as.integer(pairup.j.noint),
+               as.integer(pairup.ij.int),
+               as.integer(verbose), as.double(startTime),
+               as.integer(nAdj2estimateTime), .GlobalEnv))
 }
 
 .qpFastNrrPar <- function(X, I, Y, q, restrict.Q, fix.Q, nTests, alpha,
@@ -4855,26 +4855,26 @@ clPrCall <- function(cl, fun, n.adj, ...) {
                           exact.test, verbose, estimateTime, nAdj2estimateTime) {
   clOpt <- get("getClusterOption", mode="function")
   myMaster <- clOpt("masterNode")
-
+  
   startTime <- 0
   if (estimateTime)
     startTime <- proc.time()["elapsed"]
-
+  
   ## nLevels <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
   nLevels <- rep(NA_integer_, times=ncol(X))
   nLevels[I] <- apply(X[, I, drop=FALSE], 2, function(x) nlevels(as.factor(x)))
   if (any(nLevels[I] == 1))
     stop(sprintf("Discrete variable %s has only one level", colnames(X)[I[nLevels[I]==1]]))
-
+  
   ## clusterRank and clusterSize should have been defined by the master node
   return(.Call("qp_fast_nrr_par", X, as.integer(I), as.integer(nLevels),
-                                 as.integer(Y), as.integer(q), restrict.Q, ## restrict.Q can be a matrix
-                                 as.integer(fix.Q), as.integer(nTests), as.double(alpha),
-                                 as.integer(pairup.i.noint), as.integer(pairup.j.noint),
-                                 as.integer(pairup.ij.int), as.integer(exact.test),
-                                 as.integer(verbose), as.double(startTime),
-                                 as.integer(nAdj2estimateTime), as.integer(get("clusterRank")),
-                                 as.integer(get("clusterSize")), myMaster, .GlobalEnv))
+               as.integer(Y), as.integer(q), restrict.Q, ## restrict.Q can be a matrix
+               as.integer(fix.Q), as.integer(nTests), as.double(alpha),
+               as.integer(pairup.i.noint), as.integer(pairup.j.noint),
+               as.integer(pairup.ij.int), as.integer(exact.test),
+               as.integer(verbose), as.double(startTime),
+               as.integer(nAdj2estimateTime), as.integer(get("clusterRank")),
+               as.integer(get("clusterSize")), myMaster, .GlobalEnv))
 }
 
 .qpFastNrrIdenticalQsPar <- function(X, q, restrict.Q, fix.Q, nTests, alpha,
@@ -4883,22 +4883,22 @@ clPrCall <- function(cl, fun, n.adj, ...) {
                                      nAdj2estimateTime) {
   clOpt <- get("getClusterOption", mode="function")
   myMaster <- clOpt("masterNode")
-
+  
   startTime <- 0
   if (estimateTime)
     startTime <- proc.time()["elapsed"]
-
+  
   ## clusterRank and clusterSize should have been defined by the master node
   return(.Call("qp_fast_nrr_identicalQs_par",X,as.integer(q), as.integer(restrict.Q),
-                                             as.integer(fix.Q), as.integer(nTests),
-                                             as.double(alpha), as.integer(pairup.i.noint),
-                                             as.integer(pairup.j.noint),
-                                             as.integer(pairup.ij.int),
-                                             as.integer(verbose), as.double(startTime),
-                                             as.integer(nAdj2estimateTime),
-                                             as.integer(get("clusterRank")),
-                                             as.integer(get("clusterSize")),
-                                             myMaster, .GlobalEnv))
+               as.integer(fix.Q), as.integer(nTests),
+               as.double(alpha), as.integer(pairup.i.noint),
+               as.integer(pairup.j.noint),
+               as.integer(pairup.ij.int),
+               as.integer(verbose), as.double(startTime),
+               as.integer(nAdj2estimateTime),
+               as.integer(get("clusterRank")),
+               as.integer(get("clusterSize")),
+               myMaster, .GlobalEnv))
 }
 
 .qpFastEdgeNrr <- function(X, S, i, j, q, restrict.Q, fix.Q, nTests, alpha, return.pcor) {
@@ -4911,11 +4911,11 @@ clPrCall <- function(cl, fun, n.adj, ...) {
     p <- ncol(X)
     n <- nrow(X)
   }
-
+  
   return(.Call("qp_fast_edge_nrr", X, Sx, p, as.integer(n), as.integer(i), as.integer(j),
-                                  as.integer(q), as.integer(restrict.Q),
-                                  as.integer(fix.Q), as.integer(nTests),
-                                  as.double(alpha), as.integer(return.pcor)))
+               as.integer(q), as.integer(restrict.Q),
+               as.integer(fix.Q), as.integer(nTests),
+               as.double(alpha), as.integer(return.pcor)))
 }
 
 .qpFastEdgeNrrHMGM <- function(X, I, nLevels, Y, ssd, mapX2ssd, i, j, q, restrict.Q,
@@ -4926,12 +4926,12 @@ clPrCall <- function(cl, fun, n.adj, ...) {
       stop(".qpFastEdgeNrrHMGM: the ssd argument should be an object of class SsdMatrix\n")
     ssdx <- ssd@ssd@x
   }
-
+  
   return(.Call("qp_fast_edge_nrr_hmgm", X, as.integer(I), as.integer(nLevels),
-                                        as.integer(Y), ssdx, as.integer(mapX2ssd),
-                                        as.integer(i),as.integer(j), as.integer(q),
-                                        as.integer(restrict.Q), as.integer(fix.Q),
-                                        as.integer(nTests), as.double(alpha), as.integer(exact.test)))
+               as.integer(Y), ssdx, as.integer(mapX2ssd),
+               as.integer(i),as.integer(j), as.integer(q),
+               as.integer(restrict.Q), as.integer(fix.Q),
+               as.integer(nTests), as.double(alpha), as.integer(exact.test)))
 }
 
 .qpFastCliquerGetCliques <- function(A, clqspervtx, verbose) {
@@ -4955,11 +4955,11 @@ clPrCall <- function(cl, fun, n.adj, ...) {
 }
 
 .qpCliqueNumberLowerBound <- function(A, return.vertices, approx.iter, verbose) {
- return(.Call("qp_clique_number_lb", A, return.vertices, as.integer(approx.iter), verbose))
+  return(.Call("qp_clique_number_lb", A, return.vertices, as.integer(approx.iter), verbose))
 }
 
 .qpCliqueNumberOstergard <- function(A, return.vertices, verbose) {
- return(.Call("qp_clique_number_os", A, return.vertices, verbose))
+  return(.Call("qp_clique_number_os", A, return.vertices, verbose))
 }
 
 qpCov <- function(X, corrected=TRUE) {
